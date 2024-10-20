@@ -1,5 +1,5 @@
 const clientId = "a80cc994deaf48b6a7363687970d729b"; // Remplacez par votre client ID
-const redirectUri = "http://localhost:5173/callback"; // URL de redirection
+const redirectUri = "https://datacamp40.netlify.app/datacamp/callback"; // URL de redirection
 
 const code = new URLSearchParams(window.location.search).get("code");
 
