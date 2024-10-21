@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const recommendations = recommendSongs(results.data, fetchedSongs);
                 console.log('Recommandations:', recommendations);
                 
-                // Ici, tu peux ajouter du code pour afficher les recommandations sur ta page
+                // Afficher les recommandations sur la page
+                displayRecommendations(recommendations);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -108,4 +109,16 @@ async function refreshFeatures(token, tracks) {
     } catch (error) {
         console.error('Error fetching audio features:', error);
     }
+}
+
+// Fonction pour afficher les recommandations sur la page
+function displayRecommendations(recommendations) {
+    const recommendationsContainer = document.getElementById('topRecommendations');
+    recommendationsContainer.innerHTML = ''; // Clear any existing content
+
+    recommendations.forEach(song => {
+        const songElement = document.createElement('div');
+        songElement.textContent = `${song.name} by ${song.artists}`;
+        recommendationsContainer.appendChild(songElement);
+    });
 }
