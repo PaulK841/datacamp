@@ -32,10 +32,9 @@ async function refreshTopTracksFeatures() {
 }
 
 async function fetchTopTracksFeatures(token, tracks) {
-
     for (const track of tracks.items) {
         let result;
-        let retryAfter = 1;
+        let retryAfter = 1; // Délai par défaut de 1 seconde
 
         // Retry logic for handling rate limiting (status code 429)
         while (retryAfter > 0) {
@@ -46,11 +45,11 @@ async function fetchTopTracksFeatures(token, tracks) {
 
             if (result.status === 429) {
                 const retryAfterHeader = result.headers.get('Retry-After');
-                retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : 1;
+                retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : retryAfter; // Utiliser le délai fourni par l'API
                 console.warn(`Rate limited. Retrying after ${retryAfter} seconds...`);
-                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Attendre avant de réessayer
             } else {
-                retryAfter = 0;
+                retryAfter = 0; // Réinitialiser le retry après un succès
             }
         }
 
@@ -63,6 +62,7 @@ async function fetchTopTracksFeatures(token, tracks) {
         track.features = features;
     }
 }
+
 
 // Fetch top items (artists or tracks) with a limit of 10
 async function fetchTop(token, type, time_range = 'long_term') {
