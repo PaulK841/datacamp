@@ -19,10 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const trackId = await fetchTop(accessToken, 'tracks', 'long_term');  // Attend la récupération des chansons
         console.log('Chansons récupérées:', trackId);
-        const fetchedSongs2 = await refreshFeatures(accessToken); 
-        console.log(fetchedSongs2) // Attend la récupération des chansons
-        const fetchedSongs = await fetchAudioFeatures(accessToken, trackId);  // Attend la récupération des chansons
-        console.log('Features des chansons récupérées:', fetchedSongs);
+        const fetchedSongs = await refreshFeatures(accessToken, trackId); // Attend la récupération des chansons
+        console.log(fetchedSongs) // Attend la récupération des chansons
 
         // Appel de la fonction de recommandation
         const recommendations = recommendSongs(results.data, fetchedSongs);
@@ -91,7 +89,7 @@ async function fetchAudioFeatures(token, trackId) {
     return data;
 }
 
-async function refreshFeatures(token) {
+async function refreshFeatures(token, tracks) {
     try {
         const features = await fetchAudioFeatures(token, tracks.items);
         tracks.features = features;
