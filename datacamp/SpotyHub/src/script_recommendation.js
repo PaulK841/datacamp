@@ -132,6 +132,27 @@ async function fetchProfile(token) {
   await findTop10SimilarTracks(userProfileData);
 })();
 
+
+function populateUI(top, id) {
+    const list = document.getElementById(id);
+    list.innerHTML = ''; // Clear the list before populating it
+
+    // Check if the top object has any items
+    if (top.items.length > 0) {
+        // Loop over each item and create a new list item for it
+        top.items.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.innerText = item.name;
+            list.appendChild(listItem);
+        });
+    } else {
+        // If no items were found, display a message
+        const listItem = document.createElement('li');
+        listItem.innerText = `No top ${id} found`;
+        list.appendChild(listItem);
+    }
+}
+
 // Add event listener for the recommendation page load
 document.addEventListener('DOMContentLoaded', async () => {
   const accessToken = localStorage.getItem('accessToken');
