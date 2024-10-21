@@ -3,10 +3,31 @@
 <head>
     <meta charset="utf-8">
     <title>My Spotify Profile</title>
-    <link rel="stylesheet" href="src/style.css">
     <script src="src/script.js" type="module"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="src/recommend.js"></script> 
+    <style>
+        h1, h2 {
+            color: #1db954; /* Spotify green */
+        }
+        #avatar img {
+            border-radius: 50%;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #1db954;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1aa34a;
+        }
+    </style>
 </head>
 <body>
     <h1>Your Spotify profile data</h1>
@@ -24,49 +45,13 @@
     <section id="top-artists">
         <h2>Your Top Artists</h2>
         <ul id="artists-list"></ul>
-        <ul id="features-list"></ul>    
+        <ul id="features-list"></ul>
     </section>
     <section id="top-tracks">
       <h2>Your Top Tracks</h2>
       <ul id="tracks-list"></ul>
   </section>
-  <section id="recommendations">
-    <h2>Recommendations</h2>
-    <button id="recommendation-btn">Get Recommendations</button>
-    <ul id="recommendation-list"></ul> <!-- Les recommandations seront affichées ici -->
-  </section>
-    <header id="spotihub-section">
-        <img src="logo.png" alt="SpotiHub Logo" id="logo">
-        <h1>SpotiHub</h1>
-        <p>Discover a new way to listen to music with friends!</p>
-        <button id="try-it-btn">Try it</button>
-    </header>
-    <main id="spotify-profile-section">
-        <h1>Your Spotify profile data</h1>
-        <section id="profile">
-            <h2>Logged in as <span id="displayName"></span></h2>
-            <span id="avatar"></span>
-            <ul>
-                <li>User ID: <span id="id"></span></li>
-                <li>Email: <span id="email"></span></li>
-                <li>Spotify URI: <a id="uri" href="#" target="_blank"></a></li>
-                <li>Link: <a id="url" href="#" target="_blank"></a></li>
-                <li>Profile Image: <span id="imgUrl"></span></li>
-            </ul>
-        </section>
-
-        <section id="top-artists">
-            <h2>Your Top Artists</h2>
-            <ul id="artists-list"></ul>
-            <ul id="features-list"></ul>    
-        </section>
-
-        <section id="top-tracks">
-        <h2>Your Top Tracks</h2>
-        <ul id="tracks-list"></ul>
-        </section>
   
-        <button id="downloadBtn">Download CSV</button>
-    </main>
+    <button id="downloadBtn">Download CSV</button>
 </body>
 </html>
