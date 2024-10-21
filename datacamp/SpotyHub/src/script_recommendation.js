@@ -77,6 +77,8 @@ function recommendSongs(dataset, fetchedSongs) {
         if (!songIds.has(rec.song.id)) {
             uniqueRecommendations.push(rec.song);
             songIds.add(rec.song.id);
+        } else {
+            console.log(`Duplicate song found: ${rec.song.name} by ${rec.song.artists.map(artist => artist.name).join(', ')}`);
         }
         if (uniqueRecommendations.length >= 10) break;
     }
