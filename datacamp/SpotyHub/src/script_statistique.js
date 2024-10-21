@@ -45,10 +45,7 @@ async function refreshFeatures(token, tracks) {
     try {
         const features = await fetchAudioFeatures(token, tracks.items);
         tracks.features = features;
-        const li = document.createElement("li");
-        li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
-        topTracksElement.appendChild(li);
-
+        console.log(features);
         // Add a line to indicate when the next request can be made
         const rateLimitReset = result.headers.get('Retry-After');
         if (rateLimitReset) {
@@ -56,7 +53,6 @@ async function refreshFeatures(token, tracks) {
             retryMessage.textContent = `You can make another request in ${rateLimitReset} seconds.`;
             topTracksElement.appendChild(retryMessage);
         }
-
     } catch (error) {
         console.error(error);
     }
