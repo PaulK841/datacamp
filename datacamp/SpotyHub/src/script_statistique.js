@@ -46,7 +46,18 @@ async function refreshFeatures(token, tracks) {
         const features = await fetchAudioFeatures(token, tracks.items);
         tracks.features = features;
         console.log(features);
-        // Add a line to indicate when the next request can be made
+        //les afficher en créant des éléments html
+        const list = document.createElement('ul');
+        list.className = "list-group";
+        topTracksElement.innerHTML = '';
+        topTracksElement.appendChild(list);
+        features.audio_features.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.className = "list-group-item";
+            listItem.innerText = item.name;
+            list.appendChild(listItem);
+        });
+        
     } catch (error) {
         console.error(error);
     }
