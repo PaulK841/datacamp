@@ -32,7 +32,6 @@ async function refreshTopTracksFeatures() {
 }
 
 async function fetchTopTracksFeatures(token, tracks) {
-    const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
 
     for (const track of tracks.items) {
         let result;
