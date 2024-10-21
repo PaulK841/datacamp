@@ -57,6 +57,7 @@
 #spotify-profile-section {
   padding: 50px 20px;
   background-color: black;
+  text-align: left;  /* Ajout pour aligner le texte à gauche */
 }
 
 a {
@@ -126,12 +127,13 @@ button:focus-visible {
 }
 
 #profile, #top-artists, #top-tracks {
-  width: 80%; /* Makes sections responsive */
-  margin-bottom: 2rem; /* Adds space between sections */
+  width: 80%;
+  margin-bottom: 2rem;
+  margin-left: 0; /* Aligner à gauche */
 }
 
 #profile ul, #top-artists ul, #top-tracks ul {
-  list-style-type: none; /* Removes bullet points from lists */
+  list-style-type: none;
   padding: 0;
 }
 
