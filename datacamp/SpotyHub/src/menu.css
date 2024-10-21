@@ -225,6 +225,6 @@ tr:nth-child(even){
 }
 
 #topRecommendations.li{
-  padding : 10px;
+  padding : 30px;
   justify-content: space-around;
 }
