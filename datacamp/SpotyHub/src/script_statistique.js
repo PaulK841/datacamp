@@ -47,17 +47,27 @@ async function refreshFeatures(token, tracks) {
         tracks.features = features;
         console.log(features);
         //les afficher en créant des éléments html
-        const list = document.createElement('ul');
-        list.className = "list-group";
-        topTracksElement.innerHTML = '';
-        topTracksElement.appendChild(list);
-        features.audio_features.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.className = "list-group-item";
-            listItem.innerText = item.name;
-            list.appendChild(listItem);
-        });
-        
+        for (let i = 0; i < features.audio_features.length; i++) {
+            const track = tracks.items[i];
+            const feature = features.audio_features[i];
+            const trackElement = document.createElement('div');
+            trackElement.innerHTML = `<h3>${track.name}</h3>
+            <ul>
+                <li>Duration: ${track.duration_ms} ms</li>
+                <li>Popularity: ${track.popularity}</li>
+                <li>Acousticness: ${feature.acousticness}</li>
+                <li>Danceability: ${feature.danceability}</li>
+                <li>Energy: ${feature.energy}</li>
+                <li>Instrumentalness: ${feature.instrumentalness}</li>
+                <li>Liveness: ${feature.liveness}</li>
+                <li>Loudness: ${feature.loudness}</li>
+                <li>Speechiness: ${feature.speechiness}</li>
+                <li>Tempo: ${feature.tempo}</li>
+                <li>Valence: ${feature.valence}</li>
+            </ul>`;
+            topTracksElement.appendChild(trackElement);
+        }
+
     } catch (error) {
         console.error(error);
     }
