@@ -1,14 +1,30 @@
+// Récupère le token d'accès depuis le stockage local du navigateur. 
 document.addEventListener('DOMContentLoaded', async () => {
     const accessToken = localStorage.getItem('accessToken');
     const profile = await fetchProfile(accessToken);
     populateUI_profile(profile);
 
     // Fetch the top 10 artists and tracks
-    await refreshTopArtists();
-    await refreshTopTracks();
-    const topTracks = await fetchTopTracks(accessToken, 'tracks');
-    await fetchTopTracksFeatures(accessToken, topTracks);
+    refreshTopArtists();
+    refreshTopTracks();
+    topTracks = await fetchTopTracks(accessToken, 'tracks');
+    fetchTopTracksFeatures(accessToken, topTracks);
 });
+
+const accessToken = localStorage.getItem('accessToken');
+
+const profile = await fetchProfile(accessToken);
+    // Les données de profil et les artistes les plus écoutés sont ensuite affichés sur la page Web.
+    populateUI_profile(profile)
+
+// Fetch the top 10 artists and tracks
+refreshTopArtists();
+refreshTopTracks();
+topTrackss = await fetchTopTracks(accessToken, 'tracks');
+console.log(topTrackss);
+fetchTopTracksFeatures(accessToken, topTrackss);
+
+
 
 // Add event listeners to the select elements
 document.getElementById("artists-time-range").addEventListener('change', refreshTopArtists);
@@ -26,19 +42,24 @@ async function refreshTopTracks() {
     populateUI(topTracks, 'topTracks');
 }
 
+
+
 async function fetchTopTracks(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
         method: "GET", headers: { Authorization: `Bearer ${token}` }
     });
+    console.log(result);
     return await result.json();
 }
+
 
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("top-tracks-features");
 
+    // Vérifiez si l'élément existe
     if (!topTracks) {
         console.error("L'élément avec l'ID 'top-tracks-features' n'existe pas.");
-        return;
+        return; // Sortir si l'élément n'existe pas
     }
 
     const csvRows = [];
@@ -49,63 +70,46 @@ async function fetchTopTracksFeatures(token, tracks) {
         let result;
 
         // Récupération des caractéristiques avec gestion des erreurs
-        while (true) {
-            try {
-                result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-                    method: "GET",
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+        try {
+            result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-                if (result.status === 429) {
-                    const retryAfter = result.headers.get('Retry-After') || 2;
-                    console.warn(`Rate limit exceeded for track ${track.name}. Retrying after ${retryAfter} seconds...`);
-                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-                    continue;
-                }
-
-                if (!result.ok) {
-                    throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
-                }
-
-                break; // Sortir de la boucle si la requête réussit
-            } catch (error) {
-                console.error(error);
-                break; // Sortir de la boucle sur une autre erreur
+            if (!result.ok) {
+                throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
             }
+        } catch (error) {
+            console.error(error);
+            continue; // Passer à la piste suivante en cas d'erreur
         }
 
-        // Ajouter une pause entre les requêtes
-        await new Promise(resolve => setTimeout(resolve, 500)); // Attendre 500ms avant de faire la prochaine requête
+        const features = await result.json();
+        track.features = features;
 
-        // Si la requête a réussi, traiter les fonctionnalités
-        if (result) {
-            const features = await result.json();
-            track.features = features;
+        // Display track features
+        const li = document.createElement("li");
+        li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
+        topTracks.appendChild(li);
 
-            // Display track features
-            const li = document.createElement("li");
-            li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
-            topTracks.appendChild(li);
-
-            // Prepare CSV row
-            const row = [
-                track.name,
-                features.acousticness,
-                features.danceability,
-                features.duration_ms,
-                features.energy,
-                features.instrumentalness,
-                features.key,
-                features.liveness,
-                features.loudness,
-                features.mode,
-                features.speechiness,
-                features.tempo,
-                features.time_signature,
-                features.valence
-            ];
-            csvRows.push(row.join(","));
-        }
+        // Prepare CSV row
+        const row = [
+            track.name,
+            features.acousticness,
+            features.danceability,
+            features.duration_ms,
+            features.energy,
+            features.instrumentalness,
+            features.key,
+            features.liveness,
+            features.loudness,
+            features.mode,
+            features.speechiness,
+            features.tempo,
+            features.time_signature,
+            features.valence
+        ];
+        csvRows.push(row.join(","));
     }
 
     // Save CSV
@@ -114,10 +118,9 @@ async function fetchTopTracksFeatures(token, tracks) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.setAttribute("href", url);
-    a.setAttribute("download", "top-tracks-features.csv");
+    a.setAttribute("download", "top_tracks_features.csv");
     a.click();
 }
-
 
 
 // Fetch top items (artists or tracks) with a limit of 10
@@ -127,6 +130,8 @@ async function fetchTop(token, type, time_range = 'long_term') {
     });
     return await result.json();
 }
+
+
 
 // Populate the UI with the top items (artists or tracks)
 function populateUI(top, id) {
@@ -149,6 +154,7 @@ function populateUI(top, id) {
     }
 }
 
+
 // La fonction fetchProfile envoie une requête GET à Spotify pour obtenir le profil de l'utilisateur.
 async function fetchProfile(token) {
     const result = await fetch("https://api.spotify.com/v1/me", {
@@ -158,6 +164,7 @@ async function fetchProfile(token) {
     // Renvoyer le profil de l'utilisateur sous forme de JSON.
     return await result.json();
 }
+
 
 // La fonction populateUI met à jour l'interface utilisateur avec les informations du profil de l'utilisateur.
 function populateUI_profile(profile) {
@@ -174,4 +181,5 @@ function populateUI_profile(profile) {
 
         document.getElementById("avatar").appendChild(profileImage);
     }
+
 }
