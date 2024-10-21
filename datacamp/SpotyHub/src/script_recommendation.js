@@ -69,20 +69,8 @@ function recommendSongs(dataset, fetchedSongs) {
     // Tri des recommandations par similarité décroissante
     recommendations.sort((a, b) => b.similarity - a.similarity);
 
-    // Utilisation d'un ensemble pour éviter les doublons
-    const uniqueRecommendations = new Set();
-    const topRecommendations = [];
-
-    for (const rec of recommendations) {
-        if (!uniqueRecommendations.has(rec.song.id)) {
-            uniqueRecommendations.add(rec.song.id);
-            topRecommendations.push(rec.song);
-        }
-        if (topRecommendations.length >= 10) break;
-    }
-
-    // Retourne les 10 meilleures recommandations uniques
-    return topRecommendations;
+    // Retourne les 10 meilleures recommandations
+    return recommendations.slice(0, 10).map(rec => rec.song);
 }
 
 async function fetchTop(token, type, time_range = 'long_term') {
