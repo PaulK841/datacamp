@@ -48,6 +48,10 @@ async function fetchTopTracks(token, type, time_range = 'long_term') {
     return await result.json();
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("tracks-list");
     const csvRows = [];
@@ -72,7 +76,38 @@ async function fetchTopTracksFeatures(token, tracks) {
         const li = document.createElement("li");
         li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
         topTracks.appendChild(li);
+
+        // Prépare la ligne CSV
+        const row = [
+            track.name,
+            features.acousticness,
+            features.danceability,
+            features.duration_ms,
+            features.energy,
+            features.instrumentalness,
+            features.key,
+            features.liveness,
+            features.loudness,
+            features.mode,
+            features.speechiness,
+            features.tempo,
+            features.time_signature,
+            features.valence
+        ];
+        csvRows.push(row.join(","));
+
+        // Attendre un certain temps avant de continuer
+        await sleep(200); // Attendre 200 ms entre les requêtes
     }
+
+    // Enregistrer le CSV
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "top_tracks_features.csv");
+    a.click();
 }
 
 async function redirectToAuthCodeFlow(clientId) {

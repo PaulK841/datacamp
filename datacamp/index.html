@@ -3,32 +3,44 @@
 <head>
     <meta charset="utf-8">
     <title>My Spotify Profile</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/style.css">
     <script src="src/script.js" type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="src/recommend.js"></script> 
 </head>
 <body>
-    <h1>Your Spotify profile data</h1>
-    <section id="profile">
-        <h2>Logged in as <span id="displayName"></span></h2>
-        <span id="avatar"></span>
-        <ul>
-            <li>User ID: <span id="id"></span></li>
-            <li>Email: <span id="email"></span></li>
-            <li>Spotify URI: <a id="uri" href="#" target="_blank"></a></li>
-            <li>Link: <a id="url" href="#" target="_blank"></a></li>
-            <li>Profile Image: <span id="imgUrl"></span></li>
-        </ul>
-    </section>
-    <section id="top-artists">
-        <h2>Your Top Artists</h2>
-        <ul id="artists-list"></ul>
-        <ul id="features-list"></ul>    
-    </section>
-    <section id="top-tracks">
-      <h2>Your Top Tracks</h2>
-      <ul id="tracks-list"></ul>
-  </section>
-  
-    <button id="downloadBtn">Download CSV</button>
+    <header id="spotihub-section">
+        <img src="src/logo.png" alt="SpotiHub Logo" id="logo">
+        <h1>SpotiHub</h1>
+        <p>Get personalized song recommendations based on your listening habits!</p>
+        <button id="try-it-btn">Get recommandations !</button>
+    </header>
+
+
+    <main id="spotify-profile-section">
+        <h1>Your Spotify profile data</h1>
+        <section id="profile">
+            <h2>Logged in as <span id="displayName"></span></h2>
+            <span id="avatar"></span>
+            <ul>
+                <li>User ID: <span id="id"></span></li>
+                <li>Email: <span id="email"></span></li>
+                <li>Spotify URI: <a id="uri" href="#" target="_blank"></a></li>
+                <li>Link: <a id="url" href="#" target="_blank"></a></li>
+                <li>Profile Image: <span id="imgUrl"></span></li>
+            </ul>
+        </section>
+
+        <section id="top-artists">
+            <h2>Your Top Artists</h2>
+            <ul id="artists-list"></ul>
+            <ul id="features-list"></ul>
+        </section>
+
+        <section id="top-tracks">
+            <h2>Your Top Tracks</h2>
+            <ul id="tracks-list"></ul>
+        </section>
+    </main>
 </body>
 </html>
