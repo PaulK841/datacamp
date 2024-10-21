@@ -29,7 +29,10 @@ async function refreshTopData(token) {
     console.log(topTracks);
 
     populateUI(topArtists, 'topArtists');
+
     populateUI(topTracks, 'topTracks');
+    //mettre un temps d'attente
+
     refreshFeatures(token, topTracks);
 }
 
@@ -39,17 +42,25 @@ async function refreshFeatures(token, tracks) {
         console.error("Element with ID 'top-tracks-features' not found.");
         return;
     }
-        try {
-            const features = await fetchAudioFeatures(token, tracks.items);
-            tracks.features = features;
-            const li = document.createElement("li");
-            li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
-            topTracksElement.appendChild(li);
+    try {
+        const features = await fetchAudioFeatures(token, tracks.items);
+        tracks.features = features;
+        const li = document.createElement("li");
+        li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
+        topTracksElement.appendChild(li);
 
-        } catch (error) {
-            console.error(error);
+        // Add a line to indicate when the next request can be made
+        const rateLimitReset = result.headers.get('Retry-After');
+        if (rateLimitReset) {
+            const retryMessage = document.createElement("p");
+            retryMessage.textContent = `You can make another request in ${rateLimitReset} seconds.`;
+            topTracksElement.appendChild(retryMessage);
         }
+
+    } catch (error) {
+        console.error(error);
     }
+}
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -74,11 +85,11 @@ async function fetchAudioFeatures(token, trackId) {
         headers: { Authorization: `Bearer ${token}` }
 
     });
+    console.log(retrylater);
     console.log(result);
     if (!result.ok) {
         throw new Error(`Error fetching audio features: ${result.statusText}`);
     }
-
     return await result.json();
 }
 
