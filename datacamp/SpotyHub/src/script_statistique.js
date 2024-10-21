@@ -47,7 +47,7 @@ async function refreshFeatures(token, tracks) {
             topTracksElement.appendChild(li);
 
         } catch (error) {
-            console.error(`Error fetching audio features for track ${track.name}:`, error);
+            console.error(error);
         }
     }
 
