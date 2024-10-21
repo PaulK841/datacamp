@@ -1,4 +1,15 @@
 // Récupère le token d'accès depuis le stockage local du navigateur. 
+document.addEventListener('DOMContentLoaded', async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const profile = await fetchProfile(accessToken);
+    populateUI_profile(profile);
+
+    // Fetch the top 10 artists and tracks
+    refreshTopArtists();
+    refreshTopTracks();
+    refreshTopTracksFeatures();
+});
+
 const accessToken = localStorage.getItem('accessToken');
 
 const profile = await fetchProfile(accessToken);
@@ -25,11 +36,8 @@ async function refreshTopTracks() {
     const topTracks = await fetchTop(accessToken, 'tracks', timeRange);
     populateUI(topTracks, 'topTracks');
 }
-async function refreshTopTracksFeatures() {
-    const topTracks = await fetchTop(accessToken, 'tracks');
-    await fetchTopTracksFeatures(accessToken, topTracks);
-    console.log(topTracks.items.map(track => track.features));
-}
+
+
 
 async function fetchTopTracks(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
@@ -39,16 +47,38 @@ async function fetchTopTracks(token, type, time_range = 'long_term') {
     return await result.json();
 }
 
+
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("top-tracks-features");
+
+    // Vérifiez si l'élément existe
+    if (!topTracks) {
+        console.error("L'élément avec l'ID 'top-tracks-features' n'existe pas.");
+        return; // Sortir si l'élément n'existe pas
+    }
+
     const csvRows = [];
     const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
     csvRows.push(headers.join(","));
 
     for (const track of tracks.items) {
-        const result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-            method: "GET", headers: { Authorization: `Bearer ${token}` }
-        });
+        let result;
+
+        // Récupération des caractéristiques avec gestion des erreurs
+        try {
+            result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!result.ok) {
+                throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
+            }
+        } catch (error) {
+            console.error(error);
+            continue; // Passer à la piste suivante en cas d'erreur
+        }
+
         const features = await result.json();
         track.features = features;
 
@@ -86,7 +116,6 @@ async function fetchTopTracksFeatures(token, tracks) {
     a.setAttribute("download", "top_tracks_features.csv");
     a.click();
 }
-
 
 
 // Fetch top items (artists or tracks) with a limit of 10
