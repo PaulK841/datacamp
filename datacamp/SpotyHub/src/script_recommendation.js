@@ -132,25 +132,21 @@ async function fetchProfile(token) {
   await findTop10SimilarTracks(userProfileData);
 })();
 
+function populateUI_profile(profile) {
+    // Mettre à jour les éléments HTML avec les informations du profil de l'utilisateur.
+    // Les informations affichées incluent le nom d'affichage de l'utilisateur, l'image de profil, l'ID de l'utilisateur, le pays, l'e-mail, l'URI Spotify de l'utilisateur et l'URL de l'utilisateur.
+    document.getElementById("displayName").innerText = profile.display_name;
+    localStorage.setItem('username', profile.display_name);
+    localStorage.setItem('email', profile.email);
+    if (profile.images[0]) {
+        const profileImage = new Image(200, 200);
+        profileImage.src = profile.images[0].url;
+        profileImage.height = "40";
+        profileImage.width = "40";
 
-function populateUI(top, id) {
-    const list = document.getElementById(id);
-    list.innerHTML = ''; // Clear the list before populating it
-
-    // Check if the top object has any items
-    if (top.items.length > 0) {
-        // Loop over each item and create a new list item for it
-        top.items.forEach(item => {
-            const listItem = document.createElement('li');
-            listItem.innerText = item.name;
-            list.appendChild(listItem);
-        });
-    } else {
-        // If no items were found, display a message
-        const listItem = document.createElement('li');
-        listItem.innerText = `No top ${id} found`;
-        list.appendChild(listItem);
+        document.getElementById("avatar").appendChild(profileImage);
     }
+
 }
 
 // Add event listener for the recommendation page load
