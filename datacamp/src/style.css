@@ -24,7 +24,7 @@
 }
 
 #logo {
-  width: 150px;
+  width: 250px;  /* Agrandir le logo à 250px de large */
   height: auto;
 }
 
