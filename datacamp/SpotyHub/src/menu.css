@@ -223,3 +223,11 @@ tr:nth-child(even){
   font-size: 30px;
   padding : 20px;
 }
+
+#top-tracks-features{
+  display: flex;
+  justify-content: space-around;
+  width: 80%;
+  margin-left : 7%;
+  margin-top : 12%;
+}
