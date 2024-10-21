@@ -11,27 +11,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         header: true,
         complete: async function(results) {
             console.log('Premiers éléments du dataset:', results.data.slice(0, 5));
+
+            try {
+                const trackId = await fetchTop(accessToken, 'tracks', 'long_term');
+                console.log('Chansons récupérées:', trackId);
+                const fetchedSongs = await refreshFeatures(accessToken, trackId);
+                console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
+
+                // Appel de la fonction de recommandation
+                const recommendations = recommendSongs(results.data, fetchedSongs);
+                console.log('Recommandations:', recommendations);
+                
+                // Ici, tu peux ajouter du code pour afficher les recommandations sur ta page
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         },
         error: function(error) {
             console.error('Error parsing CSV:', error);
         }
     });
-
-    try {
-        const trackId = await fetchTop(accessToken, 'tracks', 'long_term');
-        console.log('Chansons récupérées:', trackId);
-        const fetchedSongs = await refreshFeatures(accessToken, trackId);
-        console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
-        console.log(results.data);
-
-        // Appel de la fonction de recommandation
-        const recommendations = recommendSongs(results.data, fetchedSongs);
-        console.log('Recommandations:', recommendations);
-        
-        // Ici, tu peux ajouter du code pour afficher les recommandations sur ta page
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
 });
 
 // Fonction de recommandation de chansons
