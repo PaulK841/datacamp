@@ -20,8 +20,9 @@ const profile = await fetchProfile(accessToken);
 // Fetch the top 10 artists and tracks
 refreshTopArtists();
 refreshTopTracks();
-topTracks = await fetchTopTracks(accessToken, 'tracks');
-fetchTopTracksFeatures(accessToken, topTracks);
+topTrackss = await fetchTopTracks(accessToken, 'tracks');
+console.log(topTrackss);
+fetchTopTracksFeatures(accessToken, topTrackss);
 
 
 
