@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Fonction de recommandation de chansons
-// Fonction de recommandation de chansons
 function recommendSongs(dataset, fetchedSongs) {
     // Fonction pour calculer la similarité cosinus entre deux chansons
     function calculateCosineSimilarity(song1, song2) {
@@ -67,25 +66,24 @@ function recommendSongs(dataset, fetchedSongs) {
         return { song, similarity: totalSimilarity };
     });
 
-    // Filtrer les doublons
-    const uniqueRecommendations = recommendations.filter((rec, index, self) =>
-        index === self.findIndex((t) => (
-            t.song.track_id === rec.song.track_id
-        ))
-    );
+    // Tri des recommandations par similarité décroissante
+    recommendations.sort((a, b) => b.similarity - a.similarity);
 
-    // Tri des recommandations par similarité décroissante et popularité
-    uniqueRecommendations.sort((a, b) => {
-        if (b.similarity === a.similarity) {
-            return b.song.popularity - a.song.popularity;
+    // Évite les doublons en utilisant un Set pour stocker les IDs des chansons
+    const uniqueRecommendations = [];
+    const songIds = new Set();
+
+    for (const rec of recommendations) {
+        if (!songIds.has(rec.song.id)) {
+            uniqueRecommendations.push(rec.song);
+            songIds.add(rec.song.id);
         }
-        return b.similarity - a.similarity;
-    });
+        if (uniqueRecommendations.length >= 10) break;
+    }
 
-    // Retourne les 10 meilleures recommandations
-    return uniqueRecommendations.slice(0, 10).map(rec => rec.song);
+    // Retourne les 10 meilleures recommandations uniques
+    return uniqueRecommendations;
 }
-
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -126,18 +124,14 @@ async function refreshFeatures(token, tracks) {
 }
 
 // Fonction pour afficher les recommandations sur la page
-// Fonction pour afficher les recommandations sur la page
 function displayRecommendations(recommendations) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
 
     recommendations.forEach(song => {
         const songElement = document.createElement('div');
-        const artists = song.artists || 'Unknown Artist';
-        const trackName = song.track_name || 'Unknown Track';
-        const albumName = song.album_name || 'Unknown Album';
-        
-        songElement.textContent = `${trackName} by ${artists} from the album ${albumName}`;
+        const artists = Array.isArray(song.artists) ? song.artists.map(artist => artist.name).join(', ') : 'Unknown Artist';
+        songElement.textContent = `${song.name} by ${artists}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
