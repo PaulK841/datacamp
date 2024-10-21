@@ -31,37 +31,62 @@ async function refreshTopTracksFeatures() {
     console.log(topTracks.items.map(track => track.features));
 }
 
+async function fetchTopTracks(token, type, time_range = 'long_term') {
+    const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
+        method: "GET", headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log(result);
+    return await result.json();
+}
+
 async function fetchTopTracksFeatures(token, tracks) {
+    const topTracks = document.getElementById("top-tracks-features");
+    const csvRows = [];
+    const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
+    csvRows.push(headers.join(","));
+
     for (const track of tracks.items) {
-        let result;
-        let retryAfter = 1; // Délai par défaut de 1 seconde
-
-        // Retry logic for handling rate limiting (status code 429)
-        while (retryAfter > 0) {
-            result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (result.status === 429) {
-                const retryAfterHeader = result.headers.get('Retry-After');
-                retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : retryAfter; // Utiliser le délai fourni par l'API
-                console.warn(`Rate limited. Retrying after ${retryAfter} seconds...`);
-                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Attendre avant de réessayer
-            } else {
-                retryAfter = 0; // Réinitialiser le retry après un succès
-            }
-        }
-
-        if (!result.ok) {
-            const error = await result.json();
-            throw new Error(`Error fetching track features: ${error.error.message}`);
-        }
-
+        const result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+            method: "GET", headers: { Authorization: `Bearer ${token}` }
+        });
         const features = await result.json();
         track.features = features;
+
+        // Display track features
+        const li = document.createElement("li");
+        li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
+        topTracks.appendChild(li);
+
+        // Prepare CSV row
+        const row = [
+            track.name,
+            features.acousticness,
+            features.danceability,
+            features.duration_ms,
+            features.energy,
+            features.instrumentalness,
+            features.key,
+            features.liveness,
+            features.loudness,
+            features.mode,
+            features.speechiness,
+            features.tempo,
+            features.time_signature,
+            features.valence
+        ];
+        csvRows.push(row.join(","));
     }
+
+    // Save CSV
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "top_tracks_features.csv");
+    a.click();
 }
+
 
 
 // Fetch top items (artists or tracks) with a limit of 10
