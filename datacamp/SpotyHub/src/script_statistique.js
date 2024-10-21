@@ -47,12 +47,6 @@ async function refreshFeatures(token, tracks) {
         tracks.features = features;
         console.log(features);
         // Add a line to indicate when the next request can be made
-        const rateLimitReset = result.headers.get('Retry-After');
-        if (rateLimitReset) {
-            const retryMessage = document.createElement("p");
-            retryMessage.textContent = `You can make another request in ${rateLimitReset} seconds.`;
-            topTracksElement.appendChild(retryMessage);
-        }
     } catch (error) {
         console.error(error);
     }
