@@ -1,4 +1,3 @@
-// Récupère le token d'accès depuis le stockage local du navigateur. 
 document.addEventListener('DOMContentLoaded', async () => {
     const accessToken = localStorage.getItem('accessToken');
     const profile = await fetchProfile(accessToken);
@@ -7,22 +6,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch the top 10 artists and tracks
     await refreshTopArtists();
     await refreshTopTracks();
-    const topTracks = await fetchTopTracks(accessToken, 'tracks'); // Correction ici
-    fetchTopTracksFeatures(accessToken, topTracks);
+    const topTracks = await fetchTopTracks(accessToken, 'tracks');
+    await fetchTopTracksFeatures(accessToken, topTracks);
 });
-
-const accessToken = localStorage.getItem('accessToken');
-
-const profile = await fetchProfile(accessToken);
-// Les données de profil et les artistes les plus écoutés sont ensuite affichés sur la page Web.
-populateUI_profile(profile);
-
-// Fetch the top 10 artists and tracks
-await refreshTopArtists();
-await refreshTopTracks();
-const topTracks = await fetchTopTracks(accessToken, 'tracks'); // Correction ici
-console.log(topTracks);
-fetchTopTracksFeatures(accessToken, topTracks);
 
 // Add event listeners to the select elements
 document.getElementById("artists-time-range").addEventListener('change', refreshTopArtists);
@@ -44,17 +30,15 @@ async function fetchTopTracks(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
         method: "GET", headers: { Authorization: `Bearer ${token}` }
     });
-    console.log(result);
     return await result.json();
 }
 
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("top-tracks-features");
 
-    // Vérifiez si l'élément existe
     if (!topTracks) {
         console.error("L'élément avec l'ID 'top-tracks-features' n'existe pas.");
-        return; // Sortir si l'élément n'existe pas
+        return;
     }
 
     const csvRows = [];
@@ -65,7 +49,7 @@ async function fetchTopTracksFeatures(token, tracks) {
         let result;
 
         // Récupération des caractéristiques avec gestion des erreurs
-        while (true) { // Boucle jusqu'à ce que nous obtenions une réponse valide ou que nous atteignions un maximum de tentatives
+        while (true) {
             try {
                 result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
                     method: "GET",
@@ -73,24 +57,25 @@ async function fetchTopTracksFeatures(token, tracks) {
                 });
 
                 if (result.status === 429) {
-                    // Si le code de statut est 429, attendre un moment
-                    const retryAfter = result.headers.get('Retry-After') || 2; // 2 secondes par défaut
+                    const retryAfter = result.headers.get('Retry-After') || 2;
                     console.warn(`Rate limit exceeded for track ${track.name}. Retrying after ${retryAfter} seconds...`);
-                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Attendre avant de réessayer
-                    continue; // Recommencer la boucle pour réessayer la requête
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+                    continue;
                 }
 
                 if (!result.ok) {
                     throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
                 }
 
-                // Si la requête réussit, sortir de la boucle
-                break;
+                break; // Sortir de la boucle si la requête réussit
             } catch (error) {
                 console.error(error);
                 break; // Sortir de la boucle sur une autre erreur
             }
         }
+
+        // Ajouter une pause entre les requêtes
+        await new Promise(resolve => setTimeout(resolve, 500)); // Attendre 500ms avant de faire la prochaine requête
 
         // Si la requête a réussi, traiter les fonctionnalités
         if (result) {
@@ -129,9 +114,10 @@ async function fetchTopTracksFeatures(token, tracks) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.setAttribute("href", url);
-    a.setAttribute("download", "top_tracks_features.csv");
+    a.setAttribute("download", "top-tracks-features.csv");
     a.click();
 }
+
 
 
 // Fetch top items (artists or tracks) with a limit of 10
