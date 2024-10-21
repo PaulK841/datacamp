@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Fonction de recommandation de chansons
+// Fonction de recommandation de chansons
 function recommendSongs(dataset, fetchedSongs) {
     // Fonction pour calculer la similarité cosinus entre deux chansons
     function calculateCosineSimilarity(song1, song2) {
@@ -66,12 +67,25 @@ function recommendSongs(dataset, fetchedSongs) {
         return { song, similarity: totalSimilarity };
     });
 
-    // Tri des recommandations par similarité décroissante
-    recommendations.sort((a, b) => b.similarity - a.similarity);
+    // Filtrer les doublons
+    const uniqueRecommendations = recommendations.filter((rec, index, self) =>
+        index === self.findIndex((t) => (
+            t.song.track_id === rec.song.track_id
+        ))
+    );
+
+    // Tri des recommandations par similarité décroissante et popularité
+    uniqueRecommendations.sort((a, b) => {
+        if (b.similarity === a.similarity) {
+            return b.song.popularity - a.song.popularity;
+        }
+        return b.similarity - a.similarity;
+    });
 
     // Retourne les 10 meilleures recommandations
-    return recommendations.slice(0, 10).map(rec => rec.song);
+    return uniqueRecommendations.slice(0, 10).map(rec => rec.song);
 }
+
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
