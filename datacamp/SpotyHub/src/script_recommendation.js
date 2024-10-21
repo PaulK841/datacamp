@@ -117,7 +117,17 @@ function displayRecommendations(recommendations) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
 
-    recommendations.forEach((rec, index) => {
+    const uniqueRecommendations = [];
+    const trackIds = new Set();
+
+    recommendations.forEach(rec => {
+        if (!trackIds.has(rec.track_id)) {
+            trackIds.add(rec.track_id);
+            uniqueRecommendations.push(rec);
+        }
+    });
+
+    uniqueRecommendations.forEach((rec, index) => {
         const songElement = document.createElement('div');
         songElement.textContent = `Recommendation ${index + 1}: ${JSON.stringify(rec, null, 2)}`;
         recommendationsContainer.appendChild(songElement);
