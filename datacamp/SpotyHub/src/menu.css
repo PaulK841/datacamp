@@ -224,7 +224,7 @@ tr:nth-child(even){
   padding : 20px;
 }
 
-#topRecommendations{
+#topRecommendations.li{
   padding : 10px;
   justify-content: space-around;
 }
