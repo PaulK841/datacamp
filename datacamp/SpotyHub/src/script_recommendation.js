@@ -2,19 +2,22 @@
 async function loadSpotifyDataset() {
     const response = await fetch('dataset.csv');
     const text = await response.text();
-    const data = text.split('\n').slice(1).map(row => row.split(','));
+    const rows = text.split('\n').slice(1);
   
     // Extract the column names
     const columns = ['acousticness', 'danceability', 'duration_ms', 'energy', 'instrumentalness', 'key', 'liveness', 'loudness', 'mode', 'speechiness', 'tempo', 'time_signature', 'valence', 'track_name', 'artists', 'album_name', 'popularity'];
   
     // Convert CSV data to JSON format
-    const dataset = data.map(row => {
+    const dataset = rows.map(row => {
+      const values = row.split(',');
       const entry = {};
       columns.forEach((col, index) => {
-        entry[col] = isNaN(parseFloat(row[index])) ? row[index] : parseFloat(row[index]);
+        entry[col] = isNaN(parseFloat(values[index])) ? values[index].trim() : parseFloat(values[index]);
       });
       return entry;
     });
+  
+    console.log(dataset); // Debug line to check the parsed data
     return dataset;
   }
   
@@ -61,6 +64,9 @@ async function loadSpotifyDataset() {
         track.mode, track.speechiness, track.tempo, track.time_signature, track.valence
       ];
       track.similarity = cosineSimilarity(userFeaturesArray, trackFeaturesArray);
+  
+      // Debug line to verify if the track properties are present
+      console.log(track);
     });
   
     // Sort tracks by similarity and remove duplicates based on track_name
