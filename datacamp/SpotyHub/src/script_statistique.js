@@ -8,6 +8,7 @@ const profile = await fetchProfile(accessToken);
 // Fetch the top 10 artists and tracks
 refreshTopArtists();
 refreshTopTracks();
+refreshTopTracksFeatures();
 
 // Add event listeners to the select elements
 document.getElementById("artists-time-range").addEventListener('change', refreshTopArtists);
@@ -25,6 +26,32 @@ async function refreshTopTracks() {
     populateUI(topTracks, 'topTracks');
 }
 
+async function refreshTopTracksFeatures(){
+    const topTracks = await fetchTop(accessToken, 'tracks');
+    await fetchTopTracksFeatures(accessToken, topTracks);
+    console.log(features);
+}
+
+async function fetchTopTracksFeatures(token, tracks) {
+    const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
+
+    for (const track of tracks.items) {
+        const result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!result.ok) {
+            const error = await result.json();
+            throw new Error(`Error fetching track features: ${error.error.message}`);
+        }
+
+        const features = await result.json();
+        track.features = features;
+
+    }
+}
+
 // Fetch top items (artists or tracks) with a limit of 10
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -32,6 +59,8 @@ async function fetchTop(token, type, time_range = 'long_term') {
     });
     return await result.json();
 }
+
+
 
 // Populate the UI with the top items (artists or tracks)
 function populateUI(top, id) {
