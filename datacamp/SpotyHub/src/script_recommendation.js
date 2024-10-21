@@ -118,8 +118,7 @@ function displayRecommendations(recommendations) {
 
     recommendations.forEach(song => {
         const songElement = document.createElement('div');
-        const artists = Array.isArray(song.artists) ? song.artists.map(artist => artist.name).join(', ') : 'Unknown Artist';
-        songElement.textContent = `${song.name} by ${artists}`;
+        songElement.textContent = `${song.name} by ${song.artists.map(artist => artist.name).join(', ')}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
