@@ -11,12 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchTopTracksFeatures(accessToken, topTracks);
 });
 
-const accessToken = localStorage.getItem('accessToken');
-
-const profile = await fetchProfile(accessToken);
-    // Les données de profil et les artistes les plus écoutés sont ensuite affichés sur la page Web.
-    populateUI_profile(profile)
-
 // Fetch the top 10 artists and tracks
 refreshTopArtists();
 refreshTopTracks();
