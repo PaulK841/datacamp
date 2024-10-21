@@ -1,97 +1,104 @@
-// Fonction pour charger et parser le fichier CSV
-function loadCSVFile(filePath, callback) {
-    Papa.parse(filePath, {
+// Recommandation de musique à partir du CSV et des 50 morceaux de l'utilisateur
+document.getElementById('recommendation-btn').addEventListener('click', async function() {
+    // Charger le dataset.csv avec PapaParse
+    Papa.parse('./dataset.csv', {
         download: true,
         header: true,
         complete: function(results) {
-            callback(results.data);
+            const spotifyData = results.data;
+
+            // Simuler l'obtention des morceaux de l'utilisateur
+            const userTracks = JSON.parse(localStorage.getItem('userTracks'));
+            if (!userTracks) {
+                alert("No user tracks found. Please connect to Spotify first.");
+                return;
+            }
+
+            // Extraire les caractéristiques des morceaux de l'utilisateur
+            const userFeatures = userTracks.map(track => ({
+                acousticness: track.features.acousticness,
+                danceability: track.features.danceability,
+                duration_ms: track.features.duration_ms,
+                energy: track.features.energy,
+                instrumentalness: track.features.instrumentalness,
+                key: track.features.key,
+                liveness: track.features.liveness,
+                loudness: track.features.loudness,
+                mode: track.features.mode,
+                speechiness: track.features.speechiness,
+                tempo: track.features.tempo,
+                time_signature: track.features.time_signature,
+                valence: track.features.valence
+            }));
+
+            // Calculer la moyenne des caractéristiques utilisateur
+            const userAverageFeatures = calculateAverageFeatures(userFeatures);
+
+            // Calculer les similarités entre les morceaux du dataset et les morceaux de l'utilisateur
+            const recommendations = getRecommendations(spotifyData, userAverageFeatures);
+
+            // Afficher les recommandations dans la page
+            displayRecommendations(recommendations);
         }
     });
-}
-
-// Fonction pour calculer la similarité cosinus entre deux vecteurs
-function cosineSimilarity(vec1, vec2) {
-    const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
-    const magnitudeA = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
-    const magnitudeB = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
-    if (magnitudeA === 0 || magnitudeB === 0) return 0;
-    return dotProduct / (magnitudeA * magnitudeB);
-}
-
-// Fonction pour normaliser un vecteur
-function normalize(arr) {
-    const max = Math.max(...arr);
-    return arr.map(val => val / max);
-}
-
-// Fonction pour obtenir les recommandations en fonction des 50 morceaux de l'utilisateur
-function getRecommendations(userTracks, spotifyTracks) {
-    // Extraire les caractéristiques pertinentes des morceaux utilisateur
-    const userFeatures = userTracks.map(track => [
-        track.Acousticness, track.Danceability, track.Duration_ms, track.Energy,
-        track.Instrumentalness, track.Key, track.Liveness, track.Loudness,
-        track.Mode, track.Speechiness, track.Tempo, track.Time_Signature, track.Valence
-    ]);
-
-    const spotifyFeatures = spotifyTracks.map(track => [
-        track.acousticness, track.danceability, track.duration_ms, track.energy,
-        track.instrumentalness, track.key, track.liveness, track.loudness,
-        track.mode, track.speechiness, track.tempo, track.time_signature, track.valence
-    ]);
-
-    // Calculer la moyenne des caractéristiques de l'utilisateur (parmi les 50 morceaux)
-    const userAverageFeatures = userFeatures.reduce((acc, cur) => acc.map((val, i) => val + cur[i]), new Array(13).fill(0))
-                                            .map(val => val / userFeatures.length);
-
-    // Calculer la similarité cosinus entre chaque morceau Spotify et les préférences de l'utilisateur
-    const similarityScores = spotifyFeatures.map(features => cosineSimilarity(userAverageFeatures, features));
-
-    // Ajouter les scores de similarité aux données Spotify
-    spotifyTracks.forEach((track, index) => {
-        track.similarity = similarityScores[index];
-    });
-
-    // Normaliser la popularité des morceaux Spotify
-    const popularity = spotifyTracks.map(track => track.popularity);
-    const normalizedPopularity = normalize(popularity);
-
-    // Ajouter la popularité normalisée aux données Spotify
-    spotifyTracks.forEach((track, index) => {
-        track.normalized_popularity = normalizedPopularity[index];
-    });
-
-    // Calculer un score combiné en tenant compte de la similarité et de la popularité
-    const weight_similarity = 0.5;
-    const weight_popularity = 0.5;
-
-    spotifyTracks.forEach(track => {
-        track.combined_score = (weight_similarity * track.similarity) + 
-                               (weight_popularity * track.normalized_popularity);
-    });
-
-    // Trier les morceaux par score combiné et extraire les 10 meilleurs
-    const topTracks = spotifyTracks
-        .sort((a, b) => b.combined_score - a.combined_score)
-        .slice(0, 10);
-
-    // Afficher les recommandations
-    topTracks.forEach(track => {
-        console.log(`Track: ${track.track_name} by ${track.artists} (Album: ${track.album_name})`);
-        console.log(`Similarity: ${track.similarity.toFixed(2)}, Popularity: ${track.popularity}, Combined Score: ${track.combined_score.toFixed(2)}`);
-    });
-
-    return topTracks;
-}
-
-// Charger le fichier CSV et exécuter la recommandation
-loadCSVFile('./dataset.csv', function(spotifyTracks) {
-    // Les morceaux utilisateur doivent être récupérés à partir de l'API Spotify ou de vos données préchargées
-    const userTracks = window.userTracks;  // Assurez-vous que cette variable est remplie
-
-    if (userTracks && spotifyTracks) {
-        const recommendations = getRecommendations(userTracks, spotifyTracks);
-        console.log(recommendations);  // Vous pouvez les afficher dans l'UI
-    } else {
-        console.error("Les données utilisateur ou Spotify ne sont pas disponibles.");
-    }
 });
+
+// Fonction pour calculer la moyenne des caractéristiques
+function calculateAverageFeatures(features) {
+    const average = {};
+    const keys = Object.keys(features[0]);
+
+    keys.forEach(key => {
+        average[key] = features.reduce((acc, feature) => acc + parseFloat(feature[key]), 0) / features.length;
+    });
+
+    return average;
+}
+
+// Fonction pour calculer la similarité cosinus entre les morceaux de Spotify et les préférences de l'utilisateur
+function getRecommendations(spotifyData, userAverageFeatures) {
+    const recommendations = spotifyData.map(track => {
+        // Calculer la similarité cosinus
+        const trackFeatures = [
+            track.acousticness, track.danceability, track.duration_ms, track.energy,
+            track.instrumentalness, track.key, track.liveness, track.loudness,
+            track.mode, track.speechiness, track.tempo, track.time_signature, track.valence
+        ].map(parseFloat);
+
+        const similarity = cosineSimilarity(Object.values(userAverageFeatures), trackFeatures);
+        
+        return {
+            track_name: track.track_name,
+            artists: track.artists,
+            album_name: track.album_name,
+            popularity: track.popularity,
+            similarity: similarity
+        };
+    });
+
+    // Trier par similarité décroissante
+    recommendations.sort((a, b) => b.similarity - a.similarity);
+
+    // Retourner les 10 meilleures recommandations
+    return recommendations.slice(0, 10);
+}
+
+// Fonction pour calculer la similarité cosinus
+function cosineSimilarity(vecA, vecB) {
+    const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+    const normA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+    const normB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+    return dotProduct / (normA * normB);
+}
+
+// Fonction pour afficher les recommandations dans la page
+function displayRecommendations(recommendations) {
+    const recommendationList = document.getElementById('recommendation-list');
+    recommendationList.innerHTML = '';  // Vider la liste précédente
+
+    recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = `${rec.track_name} by ${rec.artists} (Album: ${rec.album_name}) - Similarity: ${(rec.similarity * 100).toFixed(2)}%`;
+        recommendationList.appendChild(li);
+    });
+}
