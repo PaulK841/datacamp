@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch the top 10 artists and tracks
     refreshTopArtists();
     refreshTopTracks();
+    topTracks = await fetchTopTracks(accessToken, 'tracks');
     fetchTopTracksFeatures(accessToken, topTracks);
 });
 
@@ -37,7 +38,7 @@ async function refreshTopTracks() {
     populateUI(topTracks, 'topTracks');
 }
 
-console.log(topTracks);
+
 
 async function fetchTopTracks(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
@@ -61,7 +62,7 @@ async function fetchTopTracksFeatures(token, tracks) {
     const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
     csvRows.push(headers.join(","));
 
-    for (const track of topTracks.items) {
+    for (const track of tracks.items) {
         let result;
 
         // Récupération des caractéristiques avec gestion des erreurs
