@@ -297,3 +297,38 @@ input{
   left: 54.4%;
 }
 
+
+/*Acceuil------------------------------------------------------------------------------------------------------------------*/
+
+#titre_acceuil{
+  display: block;
+  background-color: #111;
+  border-radius: 20px;
+  color: #1DB954;
+  font-size: 30px;
+  font-weight: bold;
+  padding : 20px;
+  margin-top: 10%;
+  text-align : center;
+}
+
+#bouton-acceuil{
+  margin-top : 5%;
+}
+
+#titre_home_page{
+  color: #1DB954;
+  font-size: 40px;
+  padding : 20px;
+}
+
+#titre_artist{
+  display: inline-block;
+  background-color: #111;
+  border-radius: 20px;
+  font-size: 30px;
+  padding : 20px;
+}
+#topArtists{
+  color: #1DB954;
+}
