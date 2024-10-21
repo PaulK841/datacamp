@@ -65,57 +65,62 @@ async function fetchTopTracksFeatures(token, tracks) {
         let result;
 
         // Récupération des caractéristiques avec gestion des erreurs
-        try {
-            result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` }
-            });
+        while (true) { // Boucle jusqu'à ce que nous obtenions une réponse valide ou que nous atteignions un maximum de tentatives
+            try {
+                result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-            if (!result.ok) {
                 if (result.status === 429) {
-                    console.warn(`Rate limit exceeded for track ${track.name}. Retrying...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Délai de 2 secondes
-                    result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
+                    // Si le code de statut est 429, attendre un moment
+                    const retryAfter = result.headers.get('Retry-After') || 2; // 2 secondes par défaut
+                    console.warn(`Rate limit exceeded for track ${track.name}. Retrying after ${retryAfter} seconds...`);
+                    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Attendre avant de réessayer
+                    continue; // Recommencer la boucle pour réessayer la requête
                 }
 
                 if (!result.ok) {
                     throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
                 }
+
+                // Si la requête réussit, sortir de la boucle
+                break;
+            } catch (error) {
+                console.error(error);
+                break; // Sortir de la boucle sur une autre erreur
             }
-        } catch (error) {
-            console.error(error);
-            continue; // Passer à la piste suivante en cas d'erreur
         }
 
-        const features = await result.json();
-        track.features = features;
+        // Si la requête a réussi, traiter les fonctionnalités
+        if (result) {
+            const features = await result.json();
+            track.features = features;
 
-        // Display track features
-        const li = document.createElement("li");
-        li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
-        topTracks.appendChild(li);
+            // Display track features
+            const li = document.createElement("li");
+            li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
+            topTracks.appendChild(li);
 
-        // Prepare CSV row
-        const row = [
-            track.name,
-            features.acousticness,
-            features.danceability,
-            features.duration_ms,
-            features.energy,
-            features.instrumentalness,
-            features.key,
-            features.liveness,
-            features.loudness,
-            features.mode,
-            features.speechiness,
-            features.tempo,
-            features.time_signature,
-            features.valence
-        ];
-        csvRows.push(row.join(","));
+            // Prepare CSV row
+            const row = [
+                track.name,
+                features.acousticness,
+                features.danceability,
+                features.duration_ms,
+                features.energy,
+                features.instrumentalness,
+                features.key,
+                features.liveness,
+                features.loudness,
+                features.mode,
+                features.speechiness,
+                features.tempo,
+                features.time_signature,
+                features.valence
+            ];
+            csvRows.push(row.join(","));
+        }
     }
 
     // Save CSV
