@@ -24,7 +24,9 @@ async function refreshTopData(token) {
     const [topArtists, topTracks] = await Promise.all([
         fetchTop(token, 'artists', document.getElementById("artists-time-range").value),
         fetchTop(token, 'tracks', document.getElementById("tracks-time-range").value)
+        
     ]);
+    console.log(topTracks);
 
     populateUI(topArtists, 'topArtists');
     populateUI(topTracks, 'topTracks');
@@ -37,11 +39,6 @@ async function refreshFeatures(token, tracks) {
         console.error("Element with ID 'top-tracks-features' not found.");
         return;
     }
-
-    const csvRows = [];
-    const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
-    csvRows.push(headers.join(","));
-
     for (const track of tracks.items) {
         try {
             const features = await fetchAudioFeatures(token, track.id);
@@ -51,35 +48,10 @@ async function refreshFeatures(token, tracks) {
             li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
             topTracksElement.appendChild(li);
 
-            const row = [
-                track.name,
-                features.acousticness,
-                features.danceability,
-                features.duration_ms,
-                features.energy,
-                features.instrumentalness,
-                features.key,
-                features.liveness,
-                features.loudness,
-                features.mode,
-                features.speechiness,
-                features.tempo,
-                features.time_signature,
-                features.valence
-            ];
-            csvRows.push(row.join(","));
         } catch (error) {
             console.error(`Error fetching audio features for track ${track.name}:`, error);
         }
     }
-
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "top_tracks_features.csv");
-    a.click();
 }
 
 async function fetchTop(token, type, time_range = 'long_term') {
