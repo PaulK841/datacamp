@@ -112,13 +112,14 @@ async function refreshFeatures(token, tracks) {
 }
 
 // Fonction pour afficher les recommandations sur la page
+// Fonction pour afficher les recommandations sur la page
 function displayRecommendations(recommendations) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
 
-    recommendations.forEach(song => {
+    recommendations.forEach((rec, index) => {
         const songElement = document.createElement('div');
-        songElement.textContent = `${song.name} by ${song.artists.map(artist => artist.name).join(', ')}`;
+        songElement.textContent = `Recommendation ${index + 1}: ${JSON.stringify(rec, null, 2)}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
