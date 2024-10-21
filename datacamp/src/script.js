@@ -72,35 +72,7 @@ async function fetchTopTracksFeatures(token, tracks) {
         const li = document.createElement("li");
         li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
         topTracks.appendChild(li);
-
-        // Prépare la ligne CSV
-        const row = [
-            track.name,
-            features.acousticness,
-            features.danceability,
-            features.duration_ms,
-            features.energy,
-            features.instrumentalness,
-            features.key,
-            features.liveness,
-            features.loudness,
-            features.mode,
-            features.speechiness,
-            features.tempo,
-            features.time_signature,
-            features.valence
-        ];
-        csvRows.push(row.join(","));
     }
-
-    // Enregistrer le CSV
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "top_tracks_features.csv");
-    a.click();
 }
 
 async function redirectToAuthCodeFlow(clientId) {
