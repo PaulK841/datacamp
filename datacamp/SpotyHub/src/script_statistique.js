@@ -5,26 +5,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateUI_profile(profile);
 
     // Fetch the top 10 artists and tracks
-    refreshTopArtists();
-    refreshTopTracks();
-    topTracks = await fetchTopTracks(accessToken, 'tracks');
+    await refreshTopArtists();
+    await refreshTopTracks();
+    const topTracks = await fetchTopTracks(accessToken, 'tracks'); // Correction ici
     fetchTopTracksFeatures(accessToken, topTracks);
 });
 
 const accessToken = localStorage.getItem('accessToken');
 
 const profile = await fetchProfile(accessToken);
-    // Les données de profil et les artistes les plus écoutés sont ensuite affichés sur la page Web.
-    populateUI_profile(profile)
+// Les données de profil et les artistes les plus écoutés sont ensuite affichés sur la page Web.
+populateUI_profile(profile);
 
 // Fetch the top 10 artists and tracks
-refreshTopArtists();
-refreshTopTracks();
-topTrackss = await fetchTopTracks(accessToken, 'tracks');
-console.log(topTrackss);
-fetchTopTracksFeatures(accessToken, topTrackss);
-
-
+await refreshTopArtists();
+await refreshTopTracks();
+const topTracks = await fetchTopTracks(accessToken, 'tracks'); // Correction ici
+console.log(topTracks);
+fetchTopTracksFeatures(accessToken, topTracks);
 
 // Add event listeners to the select elements
 document.getElementById("artists-time-range").addEventListener('change', refreshTopArtists);
@@ -42,8 +40,6 @@ async function refreshTopTracks() {
     populateUI(topTracks, 'topTracks');
 }
 
-
-
 async function fetchTopTracks(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50&offset=0`, {
         method: "GET", headers: { Authorization: `Bearer ${token}` }
@@ -51,7 +47,6 @@ async function fetchTopTracks(token, type, time_range = 'long_term') {
     console.log(result);
     return await result.json();
 }
-
 
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("top-tracks-features");
@@ -122,7 +117,6 @@ async function fetchTopTracksFeatures(token, tracks) {
     a.click();
 }
 
-
 // Fetch top items (artists or tracks) with a limit of 10
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -130,8 +124,6 @@ async function fetchTop(token, type, time_range = 'long_term') {
     });
     return await result.json();
 }
-
-
 
 // Populate the UI with the top items (artists or tracks)
 function populateUI(top, id) {
@@ -154,7 +146,6 @@ function populateUI(top, id) {
     }
 }
 
-
 // La fonction fetchProfile envoie une requête GET à Spotify pour obtenir le profil de l'utilisateur.
 async function fetchProfile(token) {
     const result = await fetch("https://api.spotify.com/v1/me", {
@@ -164,7 +155,6 @@ async function fetchProfile(token) {
     // Renvoyer le profil de l'utilisateur sous forme de JSON.
     return await result.json();
 }
-
 
 // La fonction populateUI met à jour l'interface utilisateur avec les informations du profil de l'utilisateur.
 function populateUI_profile(profile) {
@@ -181,5 +171,4 @@ function populateUI_profile(profile) {
 
         document.getElementById("avatar").appendChild(profileImage);
     }
-
 }
