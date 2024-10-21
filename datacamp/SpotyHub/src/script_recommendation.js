@@ -129,7 +129,7 @@ function displayRecommendations(recommendations) {
 
     uniqueRecommendations.forEach((rec, index) => {
         const songElement = document.createElement('div');
-        songElement.textContent = `Recommendation ${index + 1}: ${JSON.stringify(rec, null, 2)}`;
+        songElement.textContent = `Recommendation ${index + 1}: Track Name: ${rec.track_name}, Artist: ${rec.artists}, Album: ${rec.album_name}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
