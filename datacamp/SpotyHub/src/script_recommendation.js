@@ -1,5 +1,4 @@
-import fetchAudioFeatures from './script_statistique.js';  // Import de la fonction asynchrone
-
+import fetchAudioFeatures from './script_statistique.js';
 document.addEventListener('DOMContentLoaded', async function() {
   const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
   Papa.parse(url, {

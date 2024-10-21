@@ -83,7 +83,7 @@ async function fetchTop(token, type, time_range = 'long_term') {
 
 
 
-export async function fetchAudioFeatures(token, trackId) {
+export default async function fetchAudioFeatures(token, trackId) {
     let requete= 'https://api.spotify.com/v1/audio-features/?ids='
     for (let i = 0; i < trackId.length; i++) {
         requete = requete + trackId[i].id + ','
