@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SpotiHub</title>
+    <link rel="stylesheet" type="text/css" href="src/index.css">
+    <script>
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('verifier');
+            alert("You have been logged out.");
+            // Rediriger l'utilisateur vers la page d'accueil ou de connexion
+            window.location.href = "index.html";  // Assurez-vous que "login.html" est la page vers laquelle vous voulez rediriger.
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">See you next time</h1>
+        <button class="button" onclick="logout()">Log out</button>
+        <a href="accueil.html"><button class="button">Cancel</button></a>
+    </div>
+    <script>
+    function pageAuth(){
+        window.open('redirect.html')
+    }</script>
+</body>
+</html>
