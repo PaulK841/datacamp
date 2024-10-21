@@ -50,9 +50,7 @@ async function fetchTopTracks(token, type, time_range = 'long_term') {
 
 async function fetchTopTracksFeatures(token, tracks) {
     const topTracks = document.getElementById("tracks-list");
-    const csvRows = [];
     const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
-    csvRows.push(headers.join(","));
 
     for (const track of tracks.items) {
         const result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
