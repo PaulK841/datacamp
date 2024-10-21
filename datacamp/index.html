@@ -3,39 +3,19 @@
 <head>
     <meta charset="utf-8">
     <title>My Spotify Profile</title>
+    <link rel="stylesheet" href="src/style.css">
     <script src="src/script.js" type="module"></script>
-    <style>
-        h1, h2 {
-            color: #1db954; /* Spotify green */
-        }
-        #avatar img {
-            border-radius: 50%;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #1db954;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #1aa34a;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="src/recommend.js"></script> 
 </head>
 <body>
     <header id="spotihub-section">
         <img src="src/logo.png" alt="SpotiHub Logo" id="logo">
         <h1>SpotiHub</h1>
-        <p>Discover a new way to listen to music with friends!</p>
+        <p>Get personalized song recommendations based on your listening habits!</p>
         <button id="try-it-btn">Try it</button>
     </header>
+
     <main id="spotify-profile-section">
         <h1>Your Spotify profile data</h1>
         <section id="profile">
@@ -53,14 +33,15 @@
         <section id="top-artists">
             <h2>Your Top Artists</h2>
             <ul id="artists-list"></ul>
-            <ul id="features-list"></ul>    
+            <ul id="features-list"></ul>
         </section>
 
         <section id="top-tracks">
-        <h2>Your Top Tracks</h2>
-        <ul id="tracks-list"></ul>
+            <h2>Your Top Tracks</h2>
+            <ul id="tracks-list"></ul>
         </section>
-  
-    <button id="downloadBtn">Download CSV</button>
+
+        <button id="downloadBtn">Download CSV</button>
+    </main>
 </body>
 </html>
