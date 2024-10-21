@@ -90,3 +90,14 @@ async function fetchAudioFeatures(token, trackId) {
     }
     return await result.json();
 }
+
+async function refreshFeatures(token) {
+        try {
+            const features = await fetchAudioFeatures(token, tracks.items);
+            tracks.features = features;
+            console.log(features);
+        }
+        catch (error) {
+            console.error('Error fetching audio features:', error);
+        }
+    }
