@@ -112,14 +112,18 @@ async function refreshFeatures(token, tracks) {
 }
 
 // Fonction pour afficher les recommandations sur la page
+// Fonction pour afficher les recommandations sur la page
 function displayRecommendations(recommendations) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
 
     recommendations.forEach(song => {
         const songElement = document.createElement('div');
-        const artists = Array.isArray(song.artists) ? song.artists.map(artist => artist.name).join(', ') : 'Unknown Artist';
-        songElement.textContent = `${song.name} by ${artists}`;
+        const artists = song.artists || 'Unknown Artist';
+        const trackName = song.track_name || 'Unknown Track';
+        const albumName = song.album_name || 'Unknown Album';
+        
+        songElement.textContent = `${trackName} by ${artists} from the album ${albumName}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
