@@ -75,7 +75,6 @@ async function fetchAudioFeatures(token, trackId) {
         headers: { Authorization: `Bearer ${token}` }
 
     });
-    console.log(retrylater);
     console.log(result);
     if (!result.ok) {
         throw new Error(`Error fetching audio features: ${result.statusText}`);
