@@ -25,21 +25,35 @@ async function refreshTopTracks() {
     const topTracks = await fetchTop(accessToken, 'tracks', timeRange);
     populateUI(topTracks, 'topTracks');
 }
-
-async function refreshTopTracksFeatures(){
+async function refreshTopTracksFeatures() {
     const topTracks = await fetchTop(accessToken, 'tracks');
     await fetchTopTracksFeatures(accessToken, topTracks);
-    console.log(features);
+    console.log(topTracks.items.map(track => track.features));
 }
 
 async function fetchTopTracksFeatures(token, tracks) {
     const headers = ["Name", "Acousticness", "Danceability", "Duration (ms)", "Energy", "Instrumentalness", "Key", "Liveness", "Loudness", "Mode", "Speechiness", "Tempo", "Time Signature", "Valence"];
 
     for (const track of tracks.items) {
-        const result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        let result;
+        let retryAfter = 1;
+
+        // Retry logic for handling rate limiting (status code 429)
+        while (retryAfter > 0) {
+            result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (result.status === 429) {
+                const retryAfterHeader = result.headers.get('Retry-After');
+                retryAfter = retryAfterHeader ? parseInt(retryAfterHeader) : 1;
+                console.warn(`Rate limited. Retrying after ${retryAfter} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+            } else {
+                retryAfter = 0;
+            }
+        }
 
         if (!result.ok) {
             const error = await result.json();
@@ -48,7 +62,6 @@ async function fetchTopTracksFeatures(token, tracks) {
 
         const features = await result.json();
         track.features = features;
-
     }
 }
 
