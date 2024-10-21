@@ -36,9 +36,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Fonction de recommandation de chansons
 function recommendSongs(dataset, fetchedSongs) {
-    // Fonction pour calculer la similarité cosinus entre deux chansons
     function calculateCosineSimilarity(song1, song2) {
-        const attributes = ['danceability', 'energy', 'valence']; // Exemple d'attributs
+        const attributes = ['danceability', 'energy', 'valence'];
         const dotProduct = attributes.reduce((sum, attr) => {
             return sum + (song1[attr] * song2[attr]);
         }, 0);
@@ -51,13 +50,11 @@ function recommendSongs(dataset, fetchedSongs) {
             return sum + Math.pow(song2[attr], 2);
         }, 0));
 
-        // Évite la division par zéro
         if (magnitudeSong1 === 0 || magnitudeSong2 === 0) return 0;
         
         return dotProduct / (magnitudeSong1 * magnitudeSong2);
     }
 
-    // Calcul des recommandations
     const recommendations = dataset.map(song => {
         let totalSimilarity = 0;
         fetchedSongs.forEach(fetchedSong => {
@@ -66,10 +63,8 @@ function recommendSongs(dataset, fetchedSongs) {
         return { song, similarity: totalSimilarity };
     });
 
-    // Tri des recommandations par similarité décroissante
     recommendations.sort((a, b) => b.similarity - a.similarity);
 
-    // Évite les doublons en utilisant un Set pour stocker les IDs des chansons
     const uniqueRecommendations = [];
     const songIds = new Set();
 
@@ -78,14 +73,15 @@ function recommendSongs(dataset, fetchedSongs) {
             uniqueRecommendations.push(rec.song);
             songIds.add(rec.song.id);
         } else {
-            console.log(`Duplicate song found: ${rec.song.name} by ${rec.song.artists.map(artist => artist.name).join(', ')}`);
+            const artists = Array.isArray(rec.song.artists) ? rec.song.artists.map(artist => artist.name).join(', ') : 'Unknown Artist';
+            console.log(`Duplicate song found: ${rec.song.name} by ${artists}`);
         }
         if (uniqueRecommendations.length >= 10) break;
     }
 
-    // Retourne les 10 meilleures recommandations uniques
     return uniqueRecommendations;
 }
+
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
