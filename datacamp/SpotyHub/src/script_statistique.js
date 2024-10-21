@@ -1,4 +1,3 @@
-// Récupère le token d'accès depuis le stockage local du navigateur. 
 document.addEventListener('DOMContentLoaded', async () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
