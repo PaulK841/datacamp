@@ -13,6 +13,52 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Header Section for SpotiHub */
+#spotihub-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: black;
+}
+
+#logo {
+  width: 150px;
+  height: auto;
+}
+
+#spotihub-section h1 {
+  font-size: 4em;
+  color: #1DB954; /* Spotify Green */
+}
+
+#spotihub-section p {
+  font-size: 1.5em;
+  margin-top: 20px;
+}
+
+#try-it-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #1DB954;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+}
+
+#try-it-btn:hover {
+  background-color: #17a744; /* Darker green on hover */
+}
+
+/* Spotify Profile Section */
+#spotify-profile-section {
+  padding: 50px 20px;
+  background-color: black;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
