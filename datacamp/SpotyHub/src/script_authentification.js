@@ -53,7 +53,7 @@ async function getAccessToken(clientId, code) {
     params.append("client_id", clientId);
     params.append("grant_type", "authorization_code");
     params.append("code", code);
-    params.append("redirect_uri", "http://localhost:5173/redirect.html");
+    params.append("redirect_uri", "https://datacamp40.netlify.app/datacamp/spotyhub/redirect.html");
     params.append("code_verifier", verifier);
 
     // Envoyer la requête POST à Spotify pour obtenir l'access_token.
