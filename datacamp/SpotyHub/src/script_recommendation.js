@@ -4,12 +4,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Access token not found');
         return;
     }
+
     const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
     Papa.parse(url, {
         download: true,
-        header: true, // Utilisez false si vous n'avez pas de ligne d'en-tête
+        header: true,
         complete: async function(results) {
-            console.log('Premiers éléments du dataset:', results.data.slice(0, 5)); // Affiche les 5 premiers éléments
+            console.log('Premiers éléments du dataset:', results.data.slice(0, 5));
         },
         error: function(error) {
             console.error('Error parsing CSV:', error);
@@ -17,11 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     try {
-        const trackId = await fetchTop(accessToken, 'tracks', 'long_term');  // Attend la récupération des chansons
+        const trackId = await fetchTop(accessToken, 'tracks', 'long_term');
         console.log('Chansons récupérées:', trackId);
-        const fetchedSongs = await refreshFeatures(accessToken, trackId); // Attend la récupération des chansons
-        console.log(fetchedSongs) // Attend la récupération des chansons
+        const fetchedSongs = await refreshFeatures(accessToken, trackId);
+        console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
         console.log(results.data);
+
         // Appel de la fonction de recommandation
         const recommendations = recommendSongs(results.data, fetchedSongs);
         console.log('Recommandations:', recommendations);
@@ -34,41 +36,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Fonction de recommandation de chansons
 function recommendSongs(dataset, fetchedSongs) {
-    // Fonction pour calculer la similarité entre deux chansons
-    function calculateSimilarity(song1, song2) {
-        let similarity = 0;
+    // Fonction pour calculer la similarité cosinus entre deux chansons
+    function calculateCosineSimilarity(song1, song2) {
         const attributes = ['danceability', 'energy', 'valence']; // Exemple d'attributs
-        attributes.forEach(attr => {
-            similarity += Math.abs(song1[attr] - song2[attr]);
-        });
-        return similarity;
+        const dotProduct = attributes.reduce((sum, attr) => {
+            return sum + (song1[attr] * song2[attr]);
+        }, 0);
+
+        const magnitudeSong1 = Math.sqrt(attributes.reduce((sum, attr) => {
+            return sum + Math.pow(song1[attr], 2);
+        }, 0));
+
+        const magnitudeSong2 = Math.sqrt(attributes.reduce((sum, attr) => {
+            return sum + Math.pow(song2[attr], 2);
+        }, 0));
+
+        // Évite la division par zéro
+        if (magnitudeSong1 === 0 || magnitudeSong2 === 0) return 0;
+        
+        return dotProduct / (magnitudeSong1 * magnitudeSong2);
     }
 
     // Calcul des recommandations
     const recommendations = dataset.map(song => {
         let totalSimilarity = 0;
         fetchedSongs.forEach(fetchedSong => {
-            totalSimilarity += calculateSimilarity(song, fetchedSong);
+            totalSimilarity += calculateCosineSimilarity(song, fetchedSong);
         });
         return { song, similarity: totalSimilarity };
     });
 
-    // Tri des recommandations par similarité croissante
-    recommendations.sort((a, b) => a.similarity - b.similarity);
+    // Tri des recommandations par similarité décroissante
+    recommendations.sort((a, b) => b.similarity - a.similarity);
 
     // Retourne les 10 meilleures recommandations
     return recommendations.slice(0, 10).map(rec => rec.song);
 }
-
-
-
-
-
-
-
-
-
-
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -90,20 +93,19 @@ async function fetchAudioFeatures(token, trackId) {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` }
     });
-    console.log(result);
+
     if (!result.ok) {
         throw new Error(`Error fetching audio features: ${result.statusText}`);
     }
     const data = await result.json();
-    console.log('Fetched audio features:', data);
-    return data;
+    return data.audio_features; // Renvoie seulement les caractéristiques audio
 }
 
 async function refreshFeatures(token, tracks) {
     try {
         const features = await fetchAudioFeatures(token, tracks.items);
         tracks.features = features;
-        console.log(features);
+        return tracks.features; // Renvoie les caractéristiques audio
     } catch (error) {
         console.error('Error fetching audio features:', error);
     }
