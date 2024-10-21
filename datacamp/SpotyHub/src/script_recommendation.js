@@ -1,17 +1,24 @@
-import { fetchAudioFeatures } from './script_statistique.js';  // Import de la fonction asynchrone
-
-document.addEventListener('DOMContentLoaded', async function() {
-  const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
-
-  Papa.parse(url, {
+document.addEventListener('DOMContentLoaded', async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+        console.error('Access token not found');
+        return;
+    }
+    const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
+    Papa.parse(url, {
     download: true,
     header: true, // Utilisez false si vous n'avez pas de ligne d'en-tête
     complete: async function(results) {
       console.log('Premiers éléments du dataset:', results.data.slice(0, 5)); // Affiche les 5 premiers éléments
+    },
+    error: function(error) {
+        console.error('Error parsing CSV:', error);
+    }
+    });
 
-      // Appel de la fonction asynchrone pour récupérer les chansons
-      try {
-        const fetchedSongs = await fetchAudioFeatures();  // Attend la récupération des chansons
+    try {
+        const trackId = await fetchTop(accessToken, 'tracks', 'long_term');  // Attend la récupération des chansons
+        const fetchedSongs = await fetchAudioFeatures(accessToken, trackId);  // Attend la récupération des chansons
         console.log('Chansons récupérées:', fetchedSongs);
 
         // Appel de la fonction de recommandation
@@ -19,15 +26,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Recommandations:', recommendations);
         
         // Ici, tu peux ajouter du code pour afficher les recommandations sur ta page
-      } catch (error) {
-        console.error('Erreur lors de la récupération des chansons:', error);
-      }
-    },
-    error: function(error) {
-      console.error('Erreur de chargement du CSV:', error);
+    } catch (error) {
+        console.error('Error fetching data:', error);
     }
-  });
 });
+
 
 // Fonction de recommandation de chansons
 function recommendSongs(dataset, fetchedSongs) {
@@ -55,4 +58,35 @@ function recommendSongs(dataset, fetchedSongs) {
 
   // Retourne les 10 meilleures recommandations
   return recommendations.slice(0, 10).map(rec => rec.song);
+}
+
+
+async function fetchTop(token, type, time_range = 'long_term') {
+    const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return await result.json();
+}
+
+
+
+async function fetchAudioFeatures(token, trackId) {
+    let requete= 'https://api.spotify.com/v1/audio-features/?ids='
+    for (let i = 0; i < trackId.length; i++) {
+        requete = requete + trackId[i].id + ','
+        if (i == trackId.length - 1) {
+            requete = requete.slice(0, -1)
+        }
+    }
+    const result = await fetch(requete, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+
+    });
+    console.log(result);
+    if (!result.ok) {
+        throw new Error(`Error fetching audio features: ${result.statusText}`);
+    }
+    return await result.json();
 }
