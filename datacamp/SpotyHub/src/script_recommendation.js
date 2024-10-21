@@ -18,12 +18,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const fetchedSongs = await refreshFeatures(accessToken, trackId);
                 console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
 
+                // Fetch track details to get the names
+                const trackDetails = await fetchTrackDetails(accessToken, trackId);
+                console.log('Détails des chansons récupérées:', trackDetails);
+
                 // Appel de la fonction de recommandation
                 const recommendations = recommendSongs(results.data, fetchedSongs);
                 console.log('Recommandations:', recommendations);
                 
                 // Afficher les recommandations sur la page
-                displayRecommendations(recommendations);
+                displayRecommendations(recommendations, trackDetails);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -101,24 +105,30 @@ async function fetchAudioFeatures(token, trackId) {
     return data.audio_features; // Renvoie seulement les caractéristiques audio
 }
 
-async function refreshFeatures(token, tracks) {
-    try {
-        const features = await fetchAudioFeatures(token, tracks.items);
-        tracks.features = features;
-        return tracks.features; // Renvoie les caractéristiques audio
-    } catch (error) {
-        console.error('Error fetching audio features:', error);
+async function fetchTrackDetails(token, trackIds) {
+    const ids = trackIds.map(track => track.id).join(',');
+    const result = await fetch(`https://api.spotify.com/v1/tracks?ids=${ids}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!result.ok) {
+        throw new Error(`Error fetching track details: ${result.statusText}`);
     }
+
+    const data = await result.json();
+    return data.tracks; // Renvoie les détails des chansons
 }
 
 // Fonction pour afficher les recommandations sur la page
-function displayRecommendations(recommendations) {
+function displayRecommendations(recommendations, trackDetails) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
 
     recommendations.forEach(song => {
+        const trackDetail = trackDetails.find(track => track.id === song.id);
         const songElement = document.createElement('div');
-        songElement.textContent = `${song.name} by ${song.artists}`;
+        songElement.textContent = `${trackDetail.name} by ${trackDetail.artists.map(artist => artist.name).join(', ')}`;
         recommendationsContainer.appendChild(songElement);
     });
 }
