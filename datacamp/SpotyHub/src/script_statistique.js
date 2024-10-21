@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch the top 10 artists and tracks
     refreshTopArtists();
     refreshTopTracks();
-    refreshTopTracksFeatures();
+    fetchTopTracksFeatures(accessToken, topTracks);
 });
 
 const accessToken = localStorage.getItem('accessToken');
@@ -19,7 +19,7 @@ const profile = await fetchProfile(accessToken);
 // Fetch the top 10 artists and tracks
 refreshTopArtists();
 refreshTopTracks();
-refreshTopTracksFeatures();
+
 
 // Add event listeners to the select elements
 document.getElementById("artists-time-range").addEventListener('change', refreshTopArtists);
