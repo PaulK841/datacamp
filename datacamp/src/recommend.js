@@ -1,5 +1,5 @@
 // Recommandation de musique à partir du CSV et des 50 morceaux de l'utilisateur
-document.getElementById('recommendation-btn').addEventListener('click', async function() {
+document.getElementById('try-it-btn').addEventListener('click', async function() {
     // Charger le dataset.csv avec PapaParse
     Papa.parse('./dataset.csv', {
         download: true,
