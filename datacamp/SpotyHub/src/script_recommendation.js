@@ -70,7 +70,7 @@ function recommendSongs(dataset, fetchedSongs) {
     recommendations.sort((a, b) => b.similarity - a.similarity);
 
     // Retourne les 10 meilleures recommandations
-    return recommendations.slice(0, 10).map(rec => rec.song);
+    return recommendations.slice(0, 16).map(rec => rec.song);
 }
 
 async function fetchTop(token, type, time_range = 'long_term') {
