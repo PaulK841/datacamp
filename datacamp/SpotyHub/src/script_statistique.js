@@ -39,11 +39,9 @@ async function refreshFeatures(token, tracks) {
         console.error("Element with ID 'top-tracks-features' not found.");
         return;
     }
-    for (const track of tracks.items) {
         try {
-            const features = await fetchAudioFeatures(token, track.id);
-            track.features = features;
-
+            const features = await fetchAudioFeatures(token, tracks.items);
+            tracks.features = features;
             const li = document.createElement("li");
             li.textContent = `${track.name} - Danceability: ${features.danceability}, Energy: ${features.energy}, Tempo: ${features.tempo}`;
             topTracksElement.appendChild(li);
@@ -52,7 +50,6 @@ async function refreshFeatures(token, tracks) {
             console.error(`Error fetching audio features for track ${track.name}:`, error);
         }
     }
-}
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
@@ -62,12 +59,22 @@ async function fetchTop(token, type, time_range = 'long_term') {
     return await result.json();
 }
 
+
+
 async function fetchAudioFeatures(token, trackId) {
-    const result = await fetch(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+    let requete= 'https://api.spotify.com/v1/audio-features/'
+    for (let i = 0; i < trackId.length; i++) {
+        requete = requete + trackId[i].id + ','
+        if (i == trackId.length - 1) {
+            requete = requete.slice(0, -1)
+        }
+    }
+    const result = await fetch(requete, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` }
-    });
 
+    });
+    console.log(result);
     if (!result.ok) {
         throw new Error(`Error fetching audio features: ${result.statusText}`);
     }
