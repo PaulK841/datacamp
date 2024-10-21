@@ -72,7 +72,18 @@ async function fetchTopTracksFeatures(token, tracks) {
             });
 
             if (!result.ok) {
-                throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
+                if (result.status === 429) {
+                    console.warn(`Rate limit exceeded for track ${track.name}. Retrying...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Délai de 2 secondes
+                    result = await fetch(`https://api.spotify.com/v1/audio-features/${track.id}`, {
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                }
+
+                if (!result.ok) {
+                    throw new Error(`Error fetching audio features for track ${track.name}: ${result.statusText}`);
+                }
             }
         } catch (error) {
             console.error(error);
@@ -116,6 +127,7 @@ async function fetchTopTracksFeatures(token, tracks) {
     a.setAttribute("download", "top_tracks_features.csv");
     a.click();
 }
+
 
 // Fetch top items (artists or tracks) with a limit of 10
 async function fetchTop(token, type, time_range = 'long_term') {
