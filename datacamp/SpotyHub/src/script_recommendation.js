@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Chansons récupérées:', trackId);
         const fetchedSongs = await refreshFeatures(accessToken, trackId); // Attend la récupération des chansons
         console.log(fetchedSongs) // Attend la récupération des chansons
-
+        console.log(results.data);
         // Appel de la fonction de recommandation
         const recommendations = recommendSongs(results.data, fetchedSongs);
         console.log('Recommandations:', recommendations);
@@ -59,6 +59,16 @@ function recommendSongs(dataset, fetchedSongs) {
     // Retourne les 10 meilleures recommandations
     return recommendations.slice(0, 10).map(rec => rec.song);
 }
+
+
+
+
+
+
+
+
+
+
 
 async function fetchTop(token, type, time_range = 'long_term') {
     const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
