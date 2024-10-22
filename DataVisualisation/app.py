@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 # Charger les données
-regions = {
+df_regions = {
     'Zone géographique': [
         '59 - Nord', '69 - Rhône', '75 - Paris', '92 - Hauts-de-Seine', 
         'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Bretagne', 
