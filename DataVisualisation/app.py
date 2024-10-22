@@ -172,9 +172,38 @@ if selected == 'Visualizations':
 
     # Afficher le graphique
     st.pyplot(fig)
-    # 2. Visualisation 3D avec pydeck : Nombre d'emplois commerciaux par région
+    regions = {
+        'Zone géographique': [
+            '59 - Nord', '69 - Rhône', '75 - Paris', '92 - Hauts-de-Seine', 
+            'Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Bretagne', 
+            'Centre-Val de Loire', 'Grand Est', 'Hauts-de-France', 'Normandie', 
+            'Nouvelle-Aquitaine', 'Occitanie', 'Pays de la Loire', 
+            'Provence-Alpes-Côte d\'Azur', 'Île-de-France'
+        ],
+        'latitude': [
+            50.6292, 45.7640, 48.8566, 48.8471, 
+            45.7597, 47.2805, 48.2020, 
+            47.7516, 48.5855, 50.6292, 49.1829, 
+            45.7597, 43.6045, 47.2184, 
+            43.9352, 48.8566
+        ],
+        'longitude': [
+            3.0573, 4.8357, 2.3522, 2.3174, 
+            4.8357, 4.0827, -1.8312, 
+            1.6751, 7.7427, 3.0573, -0.3708, 
+            -0.3238, 1.4442, -1.5536, 
+            6.0679, 2.3522
+        ]
+    }
+
+    df_regions = pd.DataFrame(regions)
+
+    # Charger les fichiers de données
     file_path = 'DataVisualisation/data_2003_filtered.csv'
     data_geo = pd.read_csv(file_path)
+
+    # Fusionner les données géographiques avec les données des emplois
+    data_geo = pd.merge(data_geo, df_regions, on='Zone géographique', how='inner')
 
     # Afficher les données pour s'assurer qu'elles sont bien chargées
     st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France en 2003")
