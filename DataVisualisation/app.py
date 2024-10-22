@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import altair as alt
 import pydeck as pdk
-from annotated_text import annotated_text
 from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 
@@ -68,11 +67,7 @@ if selected == 'About Me':
     st.subheader('📬 Connect with Me')
     st.markdown('📬 [LinkedIn](https://www.linkedin.com/in/paul-kerdelhue-1b1b3b1b3/)', unsafe_allow_html=True)
     st.subheader('📝 About Me')
-    annotated_text(('I', 'pronom'), ('am', 'verbe'), ('a', 'determinant'), 
-                   ('student', 'nom'), ('in', 'preposition'), 
-                   ('Data Science', 'nom'), ('at', 'preposition'), 
-                   ('the', 'determinant'), ('University', 'nom'), 
-                   ('of', 'preposition'), ('Paris', 'nom'), ('.', 'ponctuation'))
+    st.write('I am a Data Science enthusiast with a keen interest in machine learning, data analysis, and data visualization. I enjoy working on projects that involve exploring and analyzing data to derive meaningful insights. In my free time, I like to learn new technologies, work on coding projects, and stay updated with the latest trends in data science.')
     st.subheader('💼 Projects')
     st.write('Here are some of the projects I have worked on:')
     st.markdown('### 🗑️ [Recognition of Garbage with an AI Model](https://datacamp40.netlify.app/datacamp/garbage/)')
