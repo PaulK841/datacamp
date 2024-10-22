@@ -153,6 +153,13 @@ if selected == 'Visualizations':
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
     top_15_regions = data_filtered.sort_values(by="nombre_emplois", ascending=False).head(15)
 
+    plt.figure(figsize=(10, 6))
+    plt.barh(top_15_regions['Zone géographique'], top_15_regions['nombre_emplois'], color='skyblue')
+    plt.xlabel('Nombre d\'emplois en 2003')
+    plt.ylabel('Région')
+    plt.title('Top 15 des régions avec le plus grand nombre d\'emplois commercial dans l\'automobile en 2003')
+
+
     # Les régions et leurs coordonnées (latitude, longitude)
     regions = {
         'Zone géographique': [
@@ -182,7 +189,7 @@ if selected == 'Visualizations':
 
     # Fusionner les données géographiques avec les données des emplois
     data_geo = pd.merge(top_15_regions, df_regions, on='Zone géographique', how='inner')
-
+    st.title('Visualisation des emplois commercial dans l\'automobile par région en 2003')
     # Mise à jour du tooltip pour utiliser le nouvel identifiant
     tooltip = {
         "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {nombre_emplois}",
