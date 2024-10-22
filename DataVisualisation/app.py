@@ -173,7 +173,7 @@ if selected == 'Visualizations':
     # Afficher le graphique
     st.pyplot(fig)
     # 2. Visualisation 3D avec pydeck : Nombre d'emplois commerciaux par région
-    st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France")
+    st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France en 2003")
 
     # Définir le tooltip
     tooltip = {
@@ -212,6 +212,7 @@ if selected == 'Visualizations':
 
     # Afficher la carte pydeck
     st.pydeck_chart(deck)
+    st.write(data_2003_filtered)
 
     # Charger les données
    
