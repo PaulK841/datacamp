@@ -212,8 +212,7 @@ if selected == 'Visualizations':
     )
 
     # Définir la couche ColumnLayer pour pydeck (carte 3D)
-    column_layer = pdk.Layer(
-        'ColumnLayer',
+    column_layer = pdk.Layer('ColumnLayer',
         data=data_geo,
         get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
         get_elevation="Nombre d'emplois / 100",  # Ajuster l'échelle pour la visibilité
