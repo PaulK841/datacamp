@@ -173,9 +173,13 @@ if selected == 'Visualizations':
     # Afficher le graphique
     st.pyplot(fig)
     # 2. Visualisation 3D avec pydeck : Nombre d'emplois commerciaux par région
+    file_path = 'DataVisualisation/data_2003_filtered.csv'
+    data_geo = pd.read_csv(file_path)
+
+    # Afficher les données pour s'assurer qu'elles sont bien chargées
     st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France en 2003")
 
-    # Définir le tooltip
+    # Définir le tooltip pour la carte
     tooltip = {
         "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Total_2003}",
         "style": {"backgroundColor": "steelblue", "color": "white"}
@@ -183,21 +187,21 @@ if selected == 'Visualizations':
 
     # Configuration de la vue initiale de la carte
     view_state = pdk.ViewState(
-        latitude=46.603354,
+        latitude=46.603354,  # Coordonnées centrales de la France
         longitude=1.888334,
         zoom=5,
         pitch=50
     )
 
-    # Définir la couche ColumnLayer pour pydeck
+    # Définir la couche ColumnLayer pour pydeck (carte 3D)
     column_layer = pdk.Layer(
         'ColumnLayer',
         data=data_geo,
-        get_position='[longitude, latitude]',
+        get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
         get_elevation='Total_2003 / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
-        get_fill_color='[255, 140, 0, 200]',
+        get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
         pickable=True,
         auto_highlight=True,
     )
@@ -210,9 +214,12 @@ if selected == 'Visualizations':
         tooltip=tooltip
     )
 
-    # Afficher la carte pydeck
+    # Afficher la carte 3D
     st.pydeck_chart(deck)
-    st.write(data_2003_filtered)
+
+    # Afficher le tableau en dessous pour montrer les données
+    st.subheader("Données chargées depuis le fichier CSV")
+    st.write(data_geo)
 
     # Charger les données
    
