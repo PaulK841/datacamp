@@ -34,7 +34,7 @@ df_regions = {
     ]
 }
 
-df_regions = pd.DataFrame(regions)
+df_regions = pd.DataFrame(df_regions)
 
 # Charger les fichiers de données
 data_2003_filtered = pd.read_csv("DataVisualisation/data_2003_filtered.csv", delimiter=',')
