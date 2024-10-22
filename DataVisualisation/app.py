@@ -283,7 +283,6 @@ if selected == 'Visualizations':
     st.pyplot(fig)
 
     # Afficher les données sous forme de tableau
-    st.write('Données filtrées (graphique en ligne):', emploi_data)
 
     # 2. Afficher le deuxième graphique (camembert) en dessous avec des choix indépendants pour la moyenne annuelle
     st.title('Répartition des emplois par secteur dans une région (moyenne annuelle)')
