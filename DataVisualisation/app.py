@@ -216,14 +216,15 @@ if selected == 'Visualizations':
     column_layer = pdk.Layer(
         'ColumnLayer',
         data=data_geo,
-        get_position=['longitude', 'latitude'],  # S'assurer que ces colonnes existent
+        get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
         get_elevation="Nombre d'emplois / 100",  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
         get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
         pickable=True,
         auto_highlight=True,
-    )
+)
+
 
     # Créer le Deck pour pydeck
     deck = pdk.Deck(
