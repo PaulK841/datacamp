@@ -138,28 +138,22 @@ if selected == 'Data_Merged':
 
 # Visualizations section
 if selected == 'Visualizations':
-    # Charger les données
+        # Charger les données du fichier CSV
     data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Identifier les colonnes contenant des informations sur les périodes (ex: '2003-T1', '2003-T2')
     time_columns = [col for col in data.columns if 'T' in col]
 
-    # Filtrer les données pour les colonnes relatives à l'année 2003
-    data_2003_filtered = data[['Zone géographique', 'Activité'] + [col for col in time_columns if col.startswith('2003')]]
+    # Calculer la moyenne annuelle par secteur d'activité et zone géographique
+    data['Nombre d\'emplois'] = data[time_columns].mean(axis=1)
 
-    # Calculer la moyenne des trimestres pour obtenir la moyenne annuelle d'emplois pour 2003
-    data_2003_filtered['Nombre d\'emplois'] = data_2003_filtered[[col for col in time_columns if col.startswith('2003')]].mean(axis=1)
+    # Filtrer les données pour le secteur "Commerce"
+    data_filtered = data[data['Activité'].str.contains('Commerce')]
 
-    # Filtrer les données pour le secteur 'Commerce'
-    data_2003_filtered = data_2003_filtered[data_2003_filtered['Activité'].str.contains('Commerce')]
+    # Trier les données par nombre d'employés et sélectionner les 15 premières régions
+    top_15_regions = data_filtered.sort_values(by='Nombre d\'emplois', ascending=False).head(15)
 
-    # Trier les données par le nombre moyen d'employés et sélectionner les 15 premières régions
-    top_15_regions = data_2003_filtered.sort_values(by='Nombre d\'emplois', ascending=False).head(15)
-
-    # 1. Visualisation : Nombre moyen d'employés dans le commerce par localisation géographique (2003)
-    st.subheader("Top 15 régions avec le plus grand nombre moyen d'employés dans le commerce (2003)")
-
-    # Créer un graphique en barres pour le nombre moyen d'employés par région
+    # Création du graphique en barres pour le nombre moyen d'employés par région
     fig, ax = plt.subplots(figsize=(10, 6))
     top_15_regions.set_index('Zone géographique')['Nombre d\'emplois'].plot(kind='bar', ax=ax)
 
@@ -172,6 +166,8 @@ if selected == 'Visualizations':
 
     # Afficher le graphique
     st.pyplot(fig)
+
+    # Les régions et leurs coordonnées (latitude, longitude)
     regions = {
         'Zone géographique': [
             '59 - Nord', '69 - Rhône', '75 - Paris', '92 - Hauts-de-Seine', 
@@ -198,19 +194,12 @@ if selected == 'Visualizations':
 
     df_regions = pd.DataFrame(regions)
 
-    # Charger les fichiers de données
-    file_path = 'DataVisualisation/data_2003_filtered.csv'
-    data_geo = pd.read_csv(file_path)
-
     # Fusionner les données géographiques avec les données des emplois
-    data_geo = pd.merge(data_geo, df_regions, on='Zone géographique', how='inner')
-
-    # Afficher les données pour s'assurer qu'elles sont bien chargées
-    st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France en 2003")
+    data_geo = pd.merge(top_15_regions, df_regions, on='Zone géographique', how='inner')
 
     # Définir le tooltip pour la carte
     tooltip = {
-        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Total_2003}",
+        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d\'emplois}",
         "style": {"backgroundColor": "steelblue", "color": "white"}
     }
 
@@ -227,7 +216,7 @@ if selected == 'Visualizations':
         'ColumnLayer',
         data=data_geo,
         get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
-        get_elevation='Total_2003 / 100',  # Ajuster l'échelle pour la visibilité
+        get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
         get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
@@ -245,64 +234,6 @@ if selected == 'Visualizations':
 
     # Afficher la carte 3D
     st.pydeck_chart(deck)
-
-    # Afficher le tableau en dessous pour montrer les données
-    st.subheader("Données chargées depuis le fichier CSV")
-    st.write(data_geo)
-
-    # Charger les données
-   
-    st.title('Visualisation des emplois par secteur et région (moyenne annuelle)')
-
-    # Charger les données
-    data = pd.read_csv('DataVisualisation/data_merged.csv')
-
-    # Sélection de la région pour la visualisation
-    region = st.selectbox('Sélectionnez une région pour le graphique en ligne', data['Zone géographique'].unique())
-
-    # Filtrer les données selon la région sélectionnée
-    filtered_data = data[data['Zone géographique'] == region]
-
-    # Sélection du secteur d'activité pour la visualisation
-    secteur = st.selectbox('Sélectionnez un secteur d\'activité pour le graphique en ligne', filtered_data['Activité'].unique())
-
-    # Filtrer les données selon le secteur sélectionné
-    filtered_data = filtered_data[filtered_data['Activité'] == secteur]
-
-    # Extraire les colonnes qui représentent les périodes (trimestres)
-    time_columns = [col for col in filtered_data.columns if 'T' in col]
-
-    # Regrouper les trimestres par année et calculer la moyenne
-    filtered_data_annual = pd.DataFrame()
-
-    for col in time_columns:
-        year = col.split('-')[0]  # Extraire l'année
-        if year not in filtered_data_annual:
-            filtered_data_annual[year] = filtered_data[[c for c in time_columns if c.startswith(year)]].mean(axis=1)
-
-    # Transposer les données pour avoir les années en index
-    emploi_data = filtered_data_annual.T
-    emploi_data.columns = ['Emplois']  # Renommer la colonne pour plus de clarté
-
-    # Nettoyer les périodes (supprimer les valeurs NaN)
-    emploi_data.dropna(inplace=True)
-
-    # Afficher la répartition du nombre de travailleurs par année
-    st.subheader(f'Nombre moyen d\'emplois pour {secteur} en {region} par année')
-
-    # Afficher un graphique pour représenter les emplois au fil des années
-    fig, ax = plt.subplots()
-    ax.plot(emploi_data.index, emploi_data['Emplois'], marker='o', linestyle='-', color='b')
-    ax.set_ylabel('Nombre moyen d\'emplois')
-    ax.set_xlabel('Année')
-    ax.set_title(f'Évolution du nombre moyen d\'emplois dans {secteur} - {region}')
-
-    # Afficher les années sur l'axe des abscisses
-    ax.set_xticks(range(0, len(emploi_data.index)))
-    ax.set_xticklabels(emploi_data.index, rotation=45, ha='right', fontsize=10)
-
-    # Ajuster automatiquement les marges
-    plt.tight_layout()
 
     # Afficher le graphique
     st.pyplot(fig)
