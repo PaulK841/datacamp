@@ -150,7 +150,6 @@ if selected == 'Visualizations':
     # Filtrer les données pour le secteur "Commerce ; réparation d'automobiles et de motocycles"
     data_filtered = data[data['Activité'].str.contains("A17-GZ - Commerce ; réparation d'automobiles et de motocycles", regex=False)]
 
-
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
     top_15_regions = data_filtered.sort_values(by="Nombre d'emplois", ascending=False).head(15)
 
@@ -223,8 +222,7 @@ if selected == 'Visualizations':
         get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
         pickable=True,
         auto_highlight=True,
-)
-
+    )
 
     # Créer le Deck pour pydeck
     deck = pdk.Deck(
