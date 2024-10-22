@@ -37,12 +37,12 @@ regions = {
 df_regions = pd.DataFrame(regions)
 
 # Charger les fichiers de données
-data_2003_filtered = pd.read_csv("data_2003_filtered.csv", delimiter=',')
+data_2003_filtered = pd.read_csv("DataVisualisation/data_2003_filtered.csv", delimiter=',')
 data_geo = pd.merge(data_2003_filtered, df_regions, on='Zone géographique', how='inner')
 data_geo = data_geo[~data_geo['Zone géographique'].isin(['France hors Mayotte', 'France métropolitaine'])]
-data1 = pd.read_csv("data1.csv", delimiter=',')
-data2 = pd.read_csv("data2.csv", delimiter=',')
-data_merged = pd.read_csv("data_merged.csv", delimiter=',')
+data1 = pd.read_csv("DataVisualisation/data1.csv", delimiter=',')
+data2 = pd.read_csv("DataVisualisation/data2.csv", delimiter=',')
+data_merged = pd.read_csv("DataVisualisation/data_merged.csv", delimiter=',')
 
 # Set page configuration
 st.set_page_config(page_title="Project Dashboard", 
@@ -139,7 +139,7 @@ if selected == 'Data_Merged':
 # Visualizations section
 if selected == 'Visualizations':
     # Charger les données
-    data = pd.read_csv('data_merged.csv')
+    data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Identifier les colonnes contenant des informations sur les périodes (ex: '2003-T1', '2003-T2')
     time_columns = [col for col in data.columns if 'T' in col]
@@ -218,7 +218,7 @@ if selected == 'Visualizations':
     st.title('Visualisation des emplois par secteur et région (moyenne annuelle)')
 
     # Charger les données
-    data = pd.read_csv('data_merged.csv')
+    data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Sélection de la région pour la visualisation
     region = st.selectbox('Sélectionnez une région pour le graphique en ligne', data['Zone géographique'].unique())
