@@ -138,7 +138,6 @@ if selected == 'Data_Merged':
 
 # Visualizations section
 if selected == 'Visualizations':
-    # Charger les données du fichier CSV
     data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Identifier les colonnes contenant des informations sur les périodes (ex: '2003-T1', '2003-T2')
@@ -147,7 +146,7 @@ if selected == 'Visualizations':
     # Calculer la moyenne annuelle par secteur d'activité et zone géographique
     data['Nombre d\'emplois'] = data[time_columns].mean(axis=1)
 
-    # Filtrer les données pour le secteur "Commerce"
+    # Filtrer les données pour le secteur "Commerce ; réparation d'automobiles et de motocycles"
     data_filtered = data[data['Activité'].str.contains('A17-GZ - Commerce ; réparation d\'automobiles et de motocycles')]
 
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
@@ -158,7 +157,7 @@ if selected == 'Visualizations':
     top_15_regions.set_index('Zone géographique')['Nombre d\'emplois'].plot(kind='bar', ax=ax)
 
     # Ajouter les détails du graphique
-    ax.set_title('Top 15 régions par nombre moyen d\'emplois dans le commerce en 2003')
+    ax.set_title('Top 15 régions par nombre moyen d\'emplois dans le commerce automobiles en 2003')
     ax.set_ylabel('Nombre moyen d\'emplois')
     ax.set_xlabel('Région')
     plt.xticks(rotation=45, ha='right')  # Rotation des étiquettes des régions pour plus de lisibilité
@@ -215,7 +214,7 @@ if selected == 'Visualizations':
     column_layer = pdk.Layer(
         'ColumnLayer',
         data=data_geo,
-        get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
+        get_position=['longitude', 'latitude'],  # S'assurer que ces colonnes existent
         get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
