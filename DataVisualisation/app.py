@@ -202,7 +202,7 @@ if selected == 'Visualizations':
 
     # Définir le tooltip pour la carte
     tooltip = {
-        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d'emplois}",
+        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d emplois}",
         "style": {"backgroundColor": "steelblue", "color": "white"}
     }
 
@@ -219,7 +219,7 @@ if selected == 'Visualizations':
         'ColumnLayer',
         data=data_geo,
         get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
-        get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
+        get_elevation='Nombre d emplois / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
         get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
