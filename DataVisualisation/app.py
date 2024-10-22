@@ -148,7 +148,8 @@ if selected == 'Visualizations':
     data["Nombre d'emplois"] = data[time_columns].mean(axis=1)
 
     # Filtrer les données pour le secteur "Commerce ; réparation d'automobiles et de motocycles"
-    data_filtered = data[data['Activité'].str.contains("A17-GZ - Commerce ; réparation d'automobiles et de motocycles")]
+    data_filtered = data[data['Activité'].str.contains("A17-GZ - Commerce ; réparation d'automobiles et de motocycles", regex=False)]
+
 
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
     top_15_regions = data_filtered.sort_values(by="Nombre d'emplois", ascending=False).head(15)
