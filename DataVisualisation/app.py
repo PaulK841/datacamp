@@ -322,7 +322,7 @@ if selected == 'Uber':
     st.header("Uber data from April 2014")
 
     # Load the Uber data
-    path = 'nyc_trips.csv'
+    path = 'DataVisualisation/nyc_trips.csv'
     data = pd.read_csv(path, delimiter=',')
 
     # Display the data
