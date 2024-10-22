@@ -192,7 +192,7 @@ if selected == 'Visualizations':
 
     # Fusionner les données géographiques avec les données des emplois
     data_geo = pd.merge(top_15_regions, df_regions, on='Zone géographique', how='inner')
-    st.title('Visualisation des emplois commercial dans l\'automobile par région en 2003')
+    st.title('Visualisation des emplois commercial dans l\'automobile par région en 2003, en 3d')
     # Mise à jour du tooltip pour utiliser le nouvel identifiant
     tooltip = {
         "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {nombre_emplois}",
