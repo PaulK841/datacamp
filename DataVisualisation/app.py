@@ -138,23 +138,24 @@ if selected == 'Data_Merged':
 
 # Visualizations section
 if selected == 'Visualizations':
+# Charger les données du fichier CSV
     data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Identifier les colonnes contenant des informations sur les périodes (ex: '2003-T1', '2003-T2')
     time_columns = [col for col in data.columns if 'T' in col]
 
     # Calculer la moyenne annuelle par secteur d'activité et zone géographique
-    data['Nombre d\'emplois'] = data[time_columns].mean(axis=1)
+    data["Nombre d'emplois"] = data[time_columns].mean(axis=1)
 
     # Filtrer les données pour le secteur "Commerce ; réparation d'automobiles et de motocycles"
-    data_filtered = data[data['Activité'].str.contains('A17-GZ - Commerce ; réparation d\'automobiles et de motocycles')]
+    data_filtered = data[data['Activité'].str.contains("A17-GZ - Commerce ; réparation d'automobiles et de motocycles")]
 
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
-    top_15_regions = data_filtered.sort_values(by='Nombre d\'emplois', ascending=False).head(15)
+    top_15_regions = data_filtered.sort_values(by="Nombre d'emplois", ascending=False).head(15)
 
     # Création du graphique en barres pour le nombre moyen d'employés par région
     fig, ax = plt.subplots(figsize=(10, 6))
-    top_15_regions.set_index('Zone géographique')['Nombre d\'emplois'].plot(kind='bar', ax=ax)
+    top_15_regions.set_index('Zone géographique')["Nombre d'emplois"].plot(kind='bar', ax=ax)
 
     # Ajouter les détails du graphique
     ax.set_title('Top 15 régions par nombre moyen d\'emplois dans le commerce automobiles en 2003')
@@ -198,7 +199,7 @@ if selected == 'Visualizations':
 
     # Définir le tooltip pour la carte
     tooltip = {
-        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d\'emplois}",
+        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d'emplois}",
         "style": {"backgroundColor": "steelblue", "color": "white"}
     }
 
@@ -215,7 +216,7 @@ if selected == 'Visualizations':
         'ColumnLayer',
         data=data_geo,
         get_position=['longitude', 'latitude'],  # S'assurer que ces colonnes existent
-        get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
+        get_elevation="Nombre d'emplois / 100",  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
         get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
@@ -233,6 +234,7 @@ if selected == 'Visualizations':
 
     # Afficher la carte 3D
     st.pydeck_chart(deck)
+
 
     # Charger les données
    
