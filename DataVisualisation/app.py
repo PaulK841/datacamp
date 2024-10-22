@@ -148,7 +148,7 @@ if selected == 'Visualizations':
     data['Nombre d\'emplois'] = data[time_columns].mean(axis=1)
 
     # Filtrer les données pour le secteur "Commerce"
-    data_filtered = data[data['Activité'].str.contains('Commerce')]
+    data_filtered = data[data['Activité'].str.contains('A17-GZ - Commerce ; réparation d\'automobiles et de motocycles')]
 
     # Trier les données par nombre d'employés et sélectionner les 15 premières régions
     top_15_regions = data_filtered.sort_values(by='Nombre d\'emplois', ascending=False).head(15)
@@ -271,7 +271,7 @@ if selected == 'Visualizations':
 
     # Nettoyer les périodes (supprimer les valeurs NaN)
     emploi_data.dropna(inplace=True)
-
+    
     # Afficher la répartition du nombre de travailleurs par année
     st.subheader(f'Nombre moyen d\'emplois pour {secteur} en {region} par année')
 
