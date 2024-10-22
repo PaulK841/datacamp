@@ -176,6 +176,10 @@ if selected == 'Visualizations':
 
     st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France")
 
+# Assurer que la donnée contient les colonnes 'longitude' et 'latitude' pour la visualisation
+# Les valeurs de longitude et latitude sont déjà présentes dans 'data_geo'
+    data_geo_filtered = top_15_regions.copy()
+
     # Définir le tooltip pour la carte
     tooltip = {
         "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre moyen d'emplois en 2003 :</b> {Nombre d'emplois}",
@@ -193,7 +197,7 @@ if selected == 'Visualizations':
     # Définir la couche ColumnLayer pour pydeck (carte 3D)
     column_layer = pdk.Layer(
         'ColumnLayer',
-        data=top_15_regions,
+        data=data_geo_filtered,
         get_position='[longitude, latitude]',
         get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
@@ -213,7 +217,6 @@ if selected == 'Visualizations':
 
     # Afficher la carte 3D
     st.pydeck_chart(deck)
-
     # Charger les données
    
     st.title('Visualisation des emplois par secteur et région (moyenne annuelle)')
