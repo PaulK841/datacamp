@@ -196,7 +196,7 @@ if selected == 'Visualizations':
 
     # Fusionner les données géographiques avec les données des emplois
     data_geo = pd.merge(top_15_regions, df_regions, on='Zone géographique', how='inner')
-
+    st.title('Visualisation 3d des emplois dans le secteur du commerce automobile par région en 2003')
     # Définir le tooltip pour la carte
     tooltip = {
         "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Nombre d'emplois}",
@@ -256,25 +256,27 @@ if selected == 'Visualizations':
     # Extraire les colonnes qui représentent les périodes (trimestres)
     time_columns = [col for col in filtered_data.columns if 'T' in col]
 
-    # Regrouper les trimestres par année et calculer la moyenne
+    # Créer un DataFrame vide pour stocker les moyennes annuelles
     filtered_data_annual = pd.DataFrame()
 
+    # Calculer la moyenne des emplois par année (en prenant la moyenne des trimestres)
     for col in time_columns:
-        year = col.split('-')[0]  # Extraire l'année
+        year = col.split('-')[0]  # Extraire l'année de la colonne
         if year not in filtered_data_annual:
+            # Calculer la moyenne des trimestres pour cette année
             filtered_data_annual[year] = filtered_data[[c for c in time_columns if c.startswith(year)]].mean(axis=1)
 
-    # Transposer les données pour avoir les années en index
+    # Transposer les données pour avoir les années en index et les valeurs en colonnes
     emploi_data = filtered_data_annual.T
     emploi_data.columns = ['Emplois']  # Renommer la colonne pour plus de clarté
 
-    # Nettoyer les périodes (supprimer les valeurs NaN)
+    # Nettoyer les périodes (supprimer les valeurs NaN si nécessaire)
     emploi_data.dropna(inplace=True)
-    
+
     # Afficher la répartition du nombre de travailleurs par année
     st.subheader(f'Nombre moyen d\'emplois pour {secteur} en {region} par année')
 
-    # Afficher un graphique pour représenter les emplois au fil des années
+    # Créer un graphique pour visualiser l'évolution des emplois dans le secteur et la région sélectionnés
     fig, ax = plt.subplots()
     ax.plot(emploi_data.index, emploi_data['Emplois'], marker='o', linestyle='-', color='b')
     ax.set_ylabel('Nombre moyen d\'emplois')
@@ -291,7 +293,7 @@ if selected == 'Visualizations':
     # Afficher le graphique
     st.pyplot(fig)
 
-    # Afficher les données filtrées sous forme de tableau
+    # Afficher les données sous forme de tableau
     st.write('Données filtrées (graphique en ligne):', emploi_data)
 
     # 2. Afficher le deuxième graphique (camembert) en dessous avec des choix indépendants pour la moyenne annuelle
