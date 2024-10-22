@@ -138,14 +138,13 @@ if selected == 'Data_Merged':
 
 # Visualizations section
 if selected == 'Visualizations':
-    # Charger les données
     data = pd.read_csv('DataVisualisation/data_merged.csv')
 
     # Identifier les colonnes contenant des informations sur les périodes (ex: '2003-T1', '2003-T2')
     time_columns = [col for col in data.columns if 'T' in col]
 
     # Filtrer les données pour les colonnes relatives à l'année 2003
-    data_2003_filtered = data[['Zone géographique', 'Activité'] + [col for col in time_columns if col.startswith('2003')]]
+    data_2003_filtered = data[['Zone géographique', 'Activité', 'longitude', 'latitude'] + [col for col in time_columns if col.startswith('2003')]]
 
     # Calculer la moyenne des trimestres pour obtenir la moyenne annuelle d'emplois pour 2003
     data_2003_filtered['Nombre d\'emplois'] = data_2003_filtered[[col for col in time_columns if col.startswith('2003')]].mean(axis=1)
@@ -172,32 +171,34 @@ if selected == 'Visualizations':
 
     # Afficher le graphique
     st.pyplot(fig)
-    # 2. Visualisation 3D avec pydeck : Nombre d'emplois commerciaux par région
+
+    # 2. Visualisation 3D avec pydeck : Nombre d'emplois commerciaux par région (3D)
+
     st.title("Visualisation 3D du nombre d'emplois commerciaux par région en France")
 
-    # Définir le tooltip
+    # Définir le tooltip pour la carte
     tooltip = {
-        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre d'emplois en 2003 :</b> {Total_2003}",
+        "html": "<b>Région :</b> {Zone géographique} <br/> <b>Nombre moyen d'emplois en 2003 :</b> {Nombre d'emplois}",
         "style": {"backgroundColor": "steelblue", "color": "white"}
     }
 
     # Configuration de la vue initiale de la carte
     view_state = pdk.ViewState(
-        latitude=46.603354,
+        latitude=46.603354,  # Coordonnées centrales de la France
         longitude=1.888334,
         zoom=5,
         pitch=50
     )
 
-    # Définir la couche ColumnLayer pour pydeck
+    # Définir la couche ColumnLayer pour pydeck (carte 3D)
     column_layer = pdk.Layer(
         'ColumnLayer',
-        data=data_geo,
+        data=top_15_regions,
         get_position='[longitude, latitude]',
-        get_elevation='Total_2003 / 100',  # Ajuster l'échelle pour la visibilité
+        get_elevation='Nombre d\'emplois / 100',  # Ajuster l'échelle pour la visibilité
         elevation_scale=50,
         radius=20000,
-        get_fill_color='[255, 140, 0, 200]',
+        get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
         pickable=True,
         auto_highlight=True,
     )
@@ -210,7 +211,7 @@ if selected == 'Visualizations':
         tooltip=tooltip
     )
 
-    # Afficher la carte pydeck
+    # Afficher la carte 3D
     st.pydeck_chart(deck)
 
     # Charger les données
