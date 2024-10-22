@@ -158,6 +158,9 @@ if selected == 'Visualizations':
     plt.xlabel('Nombre d\'emplois en 2003')
     plt.ylabel('Région')
     plt.title('Top 15 des régions avec le plus grand nombre d\'emplois commercial dans l\'automobile en 2003')
+    plt.gca().invert_yaxis()  # Inverser l'ordre des régions
+    st.pyplot()
+    
 
 
     # Les régions et leurs coordonnées (latitude, longitude)
