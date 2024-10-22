@@ -4,4 +4,4 @@ altair
 pydeck
 streamlit-option-menu
 matplotlib
-annotated-text
+st-annotated-text
