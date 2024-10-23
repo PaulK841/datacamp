@@ -49,16 +49,6 @@ if selected == 'About Me':
     st.write("Voici quelques projets sur lesquels j'ai travaillé :")
     
     st.markdown("""
-    ### 🗑️ [Reconnaissance des déchets avec un modèle IA](https://datacamp40.netlify.app/datacamp/garbage/)
-    Un projet d'intelligence artificielle dédié à la reconnaissance et la classification des types de déchets à l'aide de techniques de vision par ordinateur, afin d'automatiser le tri et le recyclage.
-    """)
-    
-    st.markdown("""
-    ### 🔬 [Classification de brevets](https://datacamp40.netlify.app/datacamp/patents/)
-    Un projet de machine learning pour classifier des brevets dans différentes catégories. Ce projet inclut le prétraitement des données textuelles des brevets et l'entraînement de modèles pour obtenir une classification précise.
-    """)
-    
-    st.markdown("""
     ### 🎵 [SpotyHub](https://datacamp40.netlify.app/datacamp/spotyhub/)
     Une application web permettant de découvrir de nouvelles musiques sur Spotify. Ce projet utilise l'API de Spotify pour extraire des données musicales et met en œuvre un système de recommandation basé sur l'historique d'écoute des utilisateurs.
     """)
