@@ -8,6 +8,7 @@ from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 import folium
 from streamlit_folium import st_folium
+from folium.plugins import HeatMap
 
 
 
