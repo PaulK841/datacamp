@@ -6,6 +6,8 @@ import pydeck as pdk
 from annotated_text import annotated_text
 from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
+import folium
+from folium.plugins import HeatMap
 
 
 
@@ -304,6 +306,51 @@ if selected == 'Visualizations':
 
     # Afficher les données filtrées sous forme de tableau
     st.write('Données filtrées (camembert):', pd.DataFrame({'Secteur': secteurs_camembert, 'Emplois annuels (moyenne)': emplois_camembert}))
+
+        # Coordonées géographiques des régions françaises (simplifiées)
+    regions_coordinates = {
+        'Île-de-France': [48.8566, 2.3522],
+        'Auvergne-Rhône-Alpes': [45.7640, 4.8357],
+        'Provence-Alpes-Côte d\'Azur': [43.9352, 6.0679],
+        'Occitanie': [43.6045, 1.4442],
+        'Nouvelle-Aquitaine': [44.8378, -0.5792],
+        'Hauts-de-France': [50.6292, 3.0573],
+        'Grand Est': [48.5855, 7.7427],
+        'Bretagne': [48.2020, -1.8312],
+        'Normandie': [49.1829, -0.3708],
+        'Centre-Val de Loire': [47.7516, 1.6751],
+        'Bourgogne-Franche-Comté': [47.2805, 4.0827],
+        'Pays de la Loire': [47.2184, -1.5536]
+    }
+
+    # Interface Streamlit pour sélectionner le secteur et l'année
+    st.title('Heatmap de l\'emploi en France')
+    secteur_selectionne = st.selectbox('Sélectionnez un secteur', options=data['Activité'].unique())
+    annee_selectionnee = st.selectbox('Sélectionnez une année', options=[col.split('-')[0] for col in data.columns if 'T' in col])
+
+    # Filtrer les données par secteur et année
+    data_filtre = data[data['Activité'] == secteur_selectionne]
+    data_filtre_annee = data_filtre[[col for col in data.columns if annee_selectionnee in col] + ['Zone géographique']]
+
+    # Ajouter une moyenne pour simplifier les données annuelles
+    data_filtre_annee['moyenne_emplois'] = data_filtre_annee.mean(axis=1)
+
+    # Préparer les données pour la heatmap (région, latitude, longitude, emploi)
+    heatmap_data = []
+    for region, coord in regions_coordinates.items():
+        emploi_region = data_filtre_annee[data_filtre_annee['Zone géographique'].str.contains(region, na=False)]
+        if not emploi_region.empty:
+            moyenne_emplois = emploi_region['moyenne_emplois'].values[0]
+            heatmap_data.append([coord[0], coord[1], moyenne_emplois])
+
+    # Création de la carte avec Folium
+    m = folium.Map(location=[46.603354, 1.888334], zoom_start=6)  # Coordonnées centrales de la France
+
+    # Ajouter la heatmap sur la carte
+    HeatMap(heatmap_data).add_to(m)
+
+    # Afficher la carte dans Streamlit
+    st_data = st._arrow_folium(m, width=700, height=500)
 
 
 # New Uber section

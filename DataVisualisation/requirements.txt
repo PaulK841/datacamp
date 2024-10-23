@@ -5,3 +5,5 @@ pydeck
 streamlit-option-menu
 matplotlib
 st-annotated-text
+folium
+streamlit-folium
