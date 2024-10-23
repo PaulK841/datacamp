@@ -7,7 +7,7 @@ from annotated_text import annotated_text
 from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 import folium
-from folium.plugins import HeatMap
+from streamlit_folium import st_folium
 
 
 
@@ -307,7 +307,8 @@ if selected == 'Visualizations':
     # Afficher les données filtrées sous forme de tableau
     st.write('Données filtrées (camembert):', pd.DataFrame({'Secteur': secteurs_camembert, 'Emplois annuels (moyenne)': emplois_camembert}))
 
-    # Coordonées géographiques des régions françaises (simplifiées)
+    
+# Coordonées géographiques des régions françaises (simplifiées)
     regions_coordinates = {
         'Île-de-France': [48.8566, 2.3522],
         'Auvergne-Rhône-Alpes': [45.7640, 4.8357],
@@ -330,7 +331,6 @@ if selected == 'Visualizations':
 
     # Filtrer les données par secteur et année
     data_filtre = data[data['Activité'] == secteur_selectionne]
-    # Sélectionner uniquement les colonnes numériques pour calculer la moyenne (les colonnes de temps)
     cols_numeriques = [col for col in data.columns if col.startswith(annee_selectionnee) and data[col].dtype in ['float64', 'int64']]
     data_filtre_annee = data_filtre[['Zone géographique'] + cols_numeriques]
 
@@ -351,8 +351,9 @@ if selected == 'Visualizations':
     # Ajouter la heatmap sur la carte
     HeatMap(heatmap_data).add_to(m)
 
-    # Afficher la carte dans Streamlit
-    st_data = st._arrow_folium(m, width=700, height=500)
+    # Afficher la carte avec streamlit-folium
+    st_folium(m, width=700, height=500)
+
 
 # New Uber section
 if selected == 'Uber':
