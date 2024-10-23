@@ -33,29 +33,35 @@ with st.sidebar:
 
 
 if selected == 'About Me':
-    st.title('About Me')
-    st.write('I am a passionate Data Science student at the University of Paris.')
-    st.subheader('📍 Location')
-    st.write('🏠 Paris, France')
-    st.subheader('📬 Connect with Me')
+    st.title('À propos de moi')
+    st.write("Je suis un étudiant passionné en science des données à l'Université de Paris.")
+    
+    st.subheader('📍 Localisation')
+    st.write("🏠 Paris, France")
+    
+    st.subheader('📬 Me contacter')
     st.markdown('📬 [LinkedIn](https://www.linkedin.com/in/paul-kerdelhue-1b1b3b1b3/)', unsafe_allow_html=True)
-    st.subheader('📝 About Me')
-    annotated_text(('I', 'pronom'), ('am', 'verbe'), ('a', 'determinant'), 
-                   ('student', 'nom'), ('in', 'preposition'), 
-                   ('Data Science', 'nom'), ('at', 'preposition'), 
-                   ('the', 'determinant'), ('University', 'nom'), 
-                   ('of', 'preposition'), ('Paris', 'nom'), ('.', 'ponctuation'))
-    st.subheader('💼 Projects')
-    st.write('Here are some of the projects I have worked on:')
-    st.markdown('### 🗑️ [Recognition of Garbage with an AI Model](https://datacamp40.netlify.app/datacamp/garbage/)')
-    st.write('An AI-based project focused on recognizing and classifying different types of garbage using computer vision techniques. This project aimed to aid in automated waste sorting and recycling processes.')
+    
+    st.subheader('📝 Mon parcours')
+    st.write("Je suis en formation dans le domaine de la science des données, où j'apprends à exploiter les données pour résoudre des problèmes complexes à travers l'analyse, la modélisation, et l'intelligence artificielle.")
 
-    st.markdown('### 🔬 [Classification of Patents](https://datacamp40.netlify.app/datacamp/patents/)')
-    st.write('A machine learning project aimed at classifying patents into different categories. This involved preprocessing patent text data, feature extraction, and training various classification models to achieve high accuracy.')
-
-    st.markdown('### 🎵 [SpotyHub](https://datacamp40.netlify.app/datacamp/spotyhub/)')
-    st.write('A web application to discover new music on Spotify. This project involved using Spotify\'s API to fetch music data and implementing a recommendation system to help users find new tracks based on their listening history.')
-
+    st.subheader('💼 Projets réalisés')
+    st.write("Voici quelques projets sur lesquels j'ai travaillé :")
+    
+    st.markdown("""
+    ### 🗑️ [Reconnaissance des déchets avec un modèle IA](https://datacamp40.netlify.app/datacamp/garbage/)
+    Un projet d'intelligence artificielle dédié à la reconnaissance et la classification des types de déchets à l'aide de techniques de vision par ordinateur, afin d'automatiser le tri et le recyclage.
+    """)
+    
+    st.markdown("""
+    ### 🔬 [Classification de brevets](https://datacamp40.netlify.app/datacamp/patents/)
+    Un projet de machine learning pour classifier des brevets dans différentes catégories. Ce projet inclut le prétraitement des données textuelles des brevets et l'entraînement de modèles pour obtenir une classification précise.
+    """)
+    
+    st.markdown("""
+    ### 🎵 [SpotyHub](https://datacamp40.netlify.app/datacamp/spotyhub/)
+    Une application web permettant de découvrir de nouvelles musiques sur Spotify. Ce projet utilise l'API de Spotify pour extraire des données musicales et met en œuvre un système de recommandation basé sur l'historique d'écoute des utilisateurs.
+    """)
 # Load data for Data1, Data2, and Data_Merged
 if selected == 'Data1':
     st.title('Visualisations of Data1: Employment Data by Sector and Region')
