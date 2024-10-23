@@ -40,8 +40,20 @@ if selected == 'About Me':
     st.write("🏠 Paris, France")
     
     st.subheader('📬 Me contacter')
-    st.markdown('📬 [LinkedIn](https://www.linkedin.com/in/paul-kerdelhue-1b1b3b1b3/)', unsafe_allow_html=True)
+    col1, col2 = st.columns([1, 2])
     
+    with col1:
+        st.markdown('📬 [LinkedIn](https://www.linkedin.com/in/paul-kerdelhue-1b1b3b1b3/)', unsafe_allow_html=True)
+    
+    with col2:
+        # Bouton pour télécharger le CV
+        with open("DataVisualisation/CV KERDELHUE Paul (6).pdf", "rb") as file:
+            btn = st.download_button(
+                label="📄 Télécharger mon CV",
+                data=file,
+                file_name="Mon_CV.pdf",
+                mime="application/pdf"
+            )
     st.subheader('📝 Mon parcours')
     st.write("Je suis en formation dans le domaine de la science des données, où j'apprends à exploiter les données pour résoudre des problèmes complexes à travers l'analyse, la modélisation, et l'intelligence artificielle.")
 
