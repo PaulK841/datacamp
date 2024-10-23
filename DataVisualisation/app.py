@@ -267,10 +267,8 @@ if selected == 'Visualizations':
 
     # Afficher les données sous forme de tableau
 
-    # 2. Afficher le deuxième graphique (camembert) en dessous avec des choix indépendants pour la moyenne annuelle
+   # Sélection de la région pour le camembert
     st.title('Répartition des emplois par secteur dans une région (moyenne annuelle)')
-
-    # Sélection de la région pour le camembert
     region_camembert = st.selectbox('Sélectionnez une région pour le camembert', data['Zone géographique'].unique())
 
     # Filtrer les données selon la région sélectionnée pour le camembert
@@ -278,7 +276,7 @@ if selected == 'Visualizations':
 
     # Extraire les colonnes des trimestres et regrouper par année
     trimestre_columns = [col for col in filtered_data_camembert.columns if 'T' in col]
-    years = sorted(list(set([col.split('-')[0] for col in trimestre_columns])))  # Obtenir les années uniques et les trier
+    years = sorted(list(set([col.split('-')[0] for col in trimestre_columns])))
 
     # Sélection de l'année pour le camembert
     selected_year = st.selectbox('Sélectionnez une année pour le camembert', years)
@@ -295,18 +293,24 @@ if selected == 'Visualizations':
     secteurs_camembert = secteurs_camembert[emplois_camembert.notnull()]
     emplois_camembert = emplois_camembert[emplois_camembert.notnull()]
 
+    # Regrouper les petits secteurs sous une catégorie "Autres"
+    emplois_camembert_df = pd.DataFrame({'Secteur': secteurs_camembert, 'Emplois': emplois_camembert})
+    threshold = 0.02 * emplois_camembert.sum()  # Seuil pour regrouper les petits secteurs
+    emplois_camembert_df.loc[emplois_camembert_df['Emplois'] < threshold, 'Secteur'] = 'Autres'
+    emplois_camembert_grouped = emplois_camembert_df.groupby('Secteur').sum()
+
     # Afficher un diagramme en camembert pour représenter la répartition des emplois par secteur
     st.subheader(f'Répartition des emplois par secteur en {region_camembert} pour l\'année {selected_year}')
 
     fig_camembert, ax_camembert = plt.subplots()
-    ax_camembert.pie(emplois_camembert, labels=secteurs_camembert, autopct='%1.1f%%', startangle=90, counterclock=False)
+    ax_camembert.pie(emplois_camembert_grouped['Emplois'], labels=emplois_camembert_grouped.index, autopct='%1.1f%%', startangle=90, counterclock=False, colors=plt.cm.Paired.colors)
     ax_camembert.axis('equal')  # Assure que le camembert est circulaire
 
     # Afficher le graphique
     st.pyplot(fig_camembert)
 
     # Afficher les données filtrées sous forme de tableau
-    st.write('Données filtrées (camembert):', pd.DataFrame({'Secteur': secteurs_camembert, 'Emplois annuels (moyenne)': emplois_camembert}))
+    st.write('Données filtrées (camembert):', emplois_camembert_grouped)
 
     
 # Coordonées géographiques des régions françaises (simplifiées)
