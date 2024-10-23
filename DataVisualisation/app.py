@@ -184,7 +184,7 @@ if selected == 'Visualizations':
 
     # Configuration de la vue initiale de la carte
     view_state = pdk.ViewState(
-        latitude=46.603354,  # Coordonnées centrales de la France
+        latitude=46.603354,  
         longitude=1.888334,
         zoom=5,
         pitch=50
@@ -194,11 +194,11 @@ if selected == 'Visualizations':
     column_layer = pdk.Layer(
         'ColumnLayer',
         data=data_geo,
-        get_position=['longitude', 'latitude'],  # Assure-toi que ces colonnes existent
-        get_elevation='nombre_emplois / 100',  # Ajuster l'échelle pour la visibilité
+        get_position=['longitude', 'latitude'],  
+        get_elevation='nombre_emplois / 100',  
         elevation_scale=50,
         radius=20000,
-        get_fill_color='[255, 140, 0, 200]',  # Couleur des colonnes
+        get_fill_color='[255, 140, 0, 200]',  
         pickable=True,
         auto_highlight=True,
     )
@@ -230,53 +230,45 @@ if selected == 'Visualizations':
     # Extraire les colonnes qui représentent les périodes (trimestres)
     time_columns = [col for col in filtered_data.columns if 'T' in col]
 
-    # Calculer la moyenne des emplois par année (en prenant la moyenne des trimestres)
+  
     filtered_data_annual = pd.DataFrame()
     for col in time_columns:
-        year = col.split('-')[0]  # Extraire l'année de la colonne
+        year = col.split('-')[0]  
         if year not in filtered_data_annual:
-            # Calculer la moyenne des trimestres pour cette année
             filtered_data_annual[year] = filtered_data[[c for c in time_columns if c.startswith(year)]].mean(axis=1)
 
-    # Transposer les données pour avoir les années en index
+   
     emploi_data = filtered_data_annual.T
-    emploi_data.columns = ['Emplois']  # Renommer la colonne pour plus de clarté
+    emploi_data.columns = ['Emplois']  
 
-    # Nettoyer les périodes (supprimer les valeurs NaN)
     emploi_data.dropna(inplace=True)
 
-    # Afficher la répartition du nombre de travailleurs par année
     st.subheader(f'Nombre moyen d\'emplois pour {secteur} en {region} par année')
 
-    # Créer un graphique pour visualiser l'évolution des emplois
     fig, ax = plt.subplots()
     ax.plot(emploi_data.index, emploi_data['Emplois'], marker='o', linestyle='-', color='b')
     ax.set_ylabel('Nombre moyen d\'emplois')
     ax.set_xlabel('Année')
     ax.set_title(f'Évolution du nombre moyen d\'emplois dans {secteur} - {region}')
 
-    # Afficher les années sur l'axe des abscisses
+  
     ax.set_xticks(range(0, len(emploi_data.index)))
     ax.set_xticklabels(emploi_data.index, rotation=45, ha='right', fontsize=10)
 
-    # Ajuster automatiquement les marges
     plt.tight_layout()
 
-    # Afficher le graphique
     st.pyplot(fig)
 
-   # Sélection de la région pour le camembert
+   
     st.title('Répartition des emplois par secteur dans une région (moyenne annuelle)')
     region_camembert = st.selectbox('Sélectionnez une région pour le camembert', data['Zone géographique'].unique())
 
-    # Filtrer les données selon la région sélectionnée pour le camembert
     filtered_data_camembert = data[data['Zone géographique'] == region_camembert]
-
-    # Extraire les colonnes des trimestres et regrouper par année
+ 
     trimestre_columns = [col for col in filtered_data_camembert.columns if 'T' in col]
     years = sorted(list(set([col.split('-')[0] for col in trimestre_columns])))
 
-    # Sélection de l'année pour le camembert
+
     selected_year = st.selectbox('Sélectionnez une année pour le camembert', years)
 
     # Regrouper les colonnes trimestrielles par année et calculer la moyenne des emplois pour chaque secteur
@@ -293,15 +285,14 @@ if selected == 'Visualizations':
         'ensemble des salariés - toutes les sections (hors activités extra-territoriales)'
     ])]
 
-    # Extraire les secteurs et leurs emplois pour l'année sélectionnée
+   
     secteurs_camembert = filtered_data_camembert_year['Activité']
     emplois_camembert = filtered_data_camembert_year['Emplois_annuels']
 
-    # Supprimer les lignes avec des valeurs nulles
+  
     secteurs_camembert = secteurs_camembert[emplois_camembert.notnull()]
     emplois_camembert = emplois_camembert[emplois_camembert.notnull()]
 
-    # Afficher un diagramme en camembert pour représenter la répartition des emplois par secteur
     st.subheader(f'Répartition des emplois par secteur en {region_camembert} pour l\'année {selected_year}')
 
     fig_camembert, ax_camembert = plt.subplots()
