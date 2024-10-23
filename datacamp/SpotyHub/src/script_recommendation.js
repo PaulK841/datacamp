@@ -31,7 +31,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         error: function(error) {
             console.error('Error parsing CSV:', error);
         }
+    
     });
+    try {
+        const profile = await fetchProfile(accessToken);
+        populateUI_profile(profile);
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
 });
 
 // Fonction de recommandation de chansons
@@ -132,4 +140,19 @@ function displayRecommendations(recommendations) {
         songElement.textContent = `Recommendation ${index + 1}: Track Name: ${rec.track_name}, Artist: ${rec.artists}, Album: ${rec.album_name}`;
         recommendationsContainer.appendChild(songElement);
     });
+}
+
+
+function populateUI_profile(profile) {
+    document.getElementById("displayName").innerText = profile.display_name;
+    localStorage.setItem('username', profile.display_name);
+    localStorage.setItem('email', profile.email);
+
+    if (profile.images[0]) {
+        const profileImage = new Image(200, 200);
+        profileImage.src = profile.images[0].url;
+        profileImage.height = "40";
+        profileImage.width = "40";
+        document.getElementById("avatar").appendChild(profileImage);
+    }
 }
