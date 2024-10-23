@@ -288,7 +288,7 @@ if selected == 'Visualizations':
     filtered_data_camembert_year['Emplois_annuels'] = filtered_data_camembert[[col for col in filtered_data_camembert.columns if selected_year in col]].mean(axis=1)
 
     # Exclure les catégories non pertinentes
-    filtered_data_camembert_year = filtered_data_camembert_year[~filtered_data_camembert_year['Activité'].isin(['Secteurs marchands non agricoles', 'A5-GU - Tertiaire marchand'])]
+    filtered_data_camembert_year = filtered_data_camembert_year[~filtered_data_camembert_year['Activité'].isin(['Secteurs marchands non agricoles', 'A5-GU - Tertiaire marchand','Ensemble des salariés - Toutes les sections (hors activités exra-territoriales)'])]
 
     # Extraire les secteurs et leurs emplois pour l'année sélectionnée
     secteurs_camembert = filtered_data_camembert_year['Activité']
