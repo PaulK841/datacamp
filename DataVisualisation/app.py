@@ -307,7 +307,7 @@ if selected == 'Visualizations':
     # Afficher les données filtrées sous forme de tableau
     st.write('Données filtrées (camembert):', pd.DataFrame({'Secteur': secteurs_camembert, 'Emplois annuels (moyenne)': emplois_camembert}))
 
-        # Coordonées géographiques des régions françaises (simplifiées)
+    # Coordonées géographiques des régions françaises (simplifiées)
     regions_coordinates = {
         'Île-de-France': [48.8566, 2.3522],
         'Auvergne-Rhône-Alpes': [45.7640, 4.8357],
@@ -330,10 +330,12 @@ if selected == 'Visualizations':
 
     # Filtrer les données par secteur et année
     data_filtre = data[data['Activité'] == secteur_selectionne]
-    data_filtre_annee = data_filtre[[col for col in data.columns if annee_selectionnee in col] + ['Zone géographique']]
+    # Sélectionner uniquement les colonnes numériques pour calculer la moyenne (les colonnes de temps)
+    cols_numeriques = [col for col in data.columns if col.startswith(annee_selectionnee) and data[col].dtype in ['float64', 'int64']]
+    data_filtre_annee = data_filtre[['Zone géographique'] + cols_numeriques]
 
     # Ajouter une moyenne pour simplifier les données annuelles
-    data_filtre_annee['moyenne_emplois'] = data_filtre_annee.mean(axis=1)
+    data_filtre_annee['moyenne_emplois'] = data_filtre_annee[cols_numeriques].mean(axis=1)
 
     # Préparer les données pour la heatmap (région, latitude, longitude, emploi)
     heatmap_data = []
@@ -351,7 +353,6 @@ if selected == 'Visualizations':
 
     # Afficher la carte dans Streamlit
     st_data = st._arrow_folium(m, width=700, height=500)
-
 
 # New Uber section
 if selected == 'Uber':
