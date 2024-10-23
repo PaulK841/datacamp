@@ -228,3 +228,9 @@ tr:nth-child(even){
   padding : 30px;
   justify-content: space-around;
 }
+
+#topRecommendations.ul{
+  padding : 10px;
+  justify-content: space-around;
+}
+
