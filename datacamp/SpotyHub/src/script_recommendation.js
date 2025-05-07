@@ -1,166 +1,160 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-        console.error('Access token not found');
-        return;
-    }
+// script_recommendation.js
 
-    const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
-    Papa.parse(url, {
-        download: true,
-        header: true,
-        complete: async function(results) {
-            console.log('Premiers éléments du dataset:', results.data.slice(0, 5));
+// === CONFIGURATION ===
+const clientId     = "a80cc994deaf48b6a7363687970d729b";      // Votre Client ID
+const redirectUri  = "https://datacamp40.netlify.app/datacamp/spotyhub/redirect.html";
+const scopes       = "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private";
 
-            try {
-                const trackId = await fetchTop(accessToken, 'tracks', 'long_term');
-                console.log('Chansons récupérées:', trackId);
-                const fetchedSongs = await refreshFeatures(accessToken, trackId);
-                console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
+// === PKCE / AUTHORIZATION CODE FLOW ===
+// Génère un code verifier aléatoire
+function generateCodeVerifier(length = 128) {
+  let text = "";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < length; i++) {
+    text += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return text;
+}
 
-                // Appel de la fonction de recommandation
-                const recommendations = recommendSongs(results.data, fetchedSongs);
-                console.log('Recommandations:', recommendations);
-                
-                // Afficher les recommandations sur la page
-                displayRecommendations(recommendations);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        },
-        error: function(error) {
-            console.error('Error parsing CSV:', error);
-        }
-    
+// Génère le code challenge (SHA-256 + base64-urlencode)
+async function generateCodeChallenge(verifier) {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await window.crypto.subtle.digest("SHA-256", data);
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)));
+  return base64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// Redirige l’utilisateur vers Spotify pour autorisation
+async function redirectToAuthCodeFlow() {
+  const verifier = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  localStorage.setItem("pkce_verifier", verifier);
+
+  const params = new URLSearchParams({
+    client_id:           clientId,
+    response_type:       "code",
+    redirect_uri:        redirectUri,
+    scope:               scopes,
+    code_challenge_method: "S256",
+    code_challenge:      challenge
+  });
+  window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
+}
+
+// Récupère l’access token en échange du code d’autorisation
+async function getAccessToken(code) {
+  const verifier = localStorage.getItem("pkce_verifier");
+  const body = new URLSearchParams({
+    client_id:     clientId,
+    grant_type:    "authorization_code",
+    code:          code,
+    redirect_uri:  redirectUri,
+    code_verifier: verifier
+  });
+
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method:  "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body:    body.toString()
+  });
+  if (!res.ok) {
+    throw new Error(`Token error ${res.status}: ${res.statusText}`);
+  }
+  const json = await res.json();
+  localStorage.setItem("spotify_access_token", json.access_token);
+  return json.access_token;
+}
+
+// Retourne l’access token stocké ou lance le flow si besoin
+async function ensureAccessToken() {
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get("code");
+  let token     = localStorage.getItem("spotify_access_token");
+
+  if (code && !token) {
+    // On vient de rediriger depuis Spotify : échange du code
+    token = await getAccessToken(code);
+    // Nettoyage de l’URL
+    window.history.replaceState({}, document.title, redirectUri);
+  }
+  if (!token) {
+    // Jamais authentifié : on démarre le PKCE flow
+    await redirectToAuthCodeFlow();
+    return null; // la page va reload / rediriger
+  }
+  return token;
+}
+
+// === FONCTIONS DE RECOMMANDATION ===
+async function fetchTopTracks(token, limit = 10, time_range = "long_term") {
+  const url = `https://api.spotify.com/v1/me/top/tracks?limit=${limit}&time_range=${time_range}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    throw new Error(`Top tracks error ${res.status}: ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data.items;
+}
+
+async function fetchAudioFeatures(token, ids=[]) {
+  if (!ids.length) return [];
+  const url = `https://api.spotify.com/v1/audio-features?ids=${ids.join(",")}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    throw new Error(`Audio features error ${res.status}: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.audio_features.filter(f => f); // on retire les éventuels null
+}
+
+function recommendSongs(features, topN = 5) {
+  // par exemple, on choisit les plus « énergétiques »
+  return features
+    .sort((a, b) => b.energy - a.energy)
+    .slice(0, topN);
+}
+
+// === MAIN ===
+async function onRecommendClick() {
+  try {
+    const token  = await ensureAccessToken();
+    if (!token) return;  // redirection en cours
+
+    const tracks   = await fetchTopTracks(token);
+    console.log("Top tracks:", tracks);
+
+    const ids      = tracks.map(t => t.id);
+    const features = await fetchAudioFeatures(token, ids);
+    console.log("Audio features:", features);
+
+    const recs     = recommendSongs(features, 5);
+    console.log("Recommendations:", recs);
+
+    const list = document.getElementById("recommendation-list");
+    list.innerHTML = "";
+    recs.forEach(f => {
+      const track = tracks.find(t => t.id === f.id);
+      const li    = document.createElement("li");
+      li.textContent = `${track.name} – ${track.artists.map(a => a.name).join(", ")}`;
+      list.appendChild(li);
     });
-    try {
-        const profile = await fetchProfile(accessToken);
-        populateUI_profile(profile);
 
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
+  } catch (err) {
+    console.error("Erreur lors de la recommandation :", err);
+    alert("Oups, une erreur est survenue : " + err.message);
+  }
+}
+
+// On branche le bouton après chargement
+window.addEventListener("DOMContentLoaded", () => {
+  document
+    .getElementById("recommend-btn")
+    .addEventListener("click", onRecommendClick);
 });
-
-// Fonction de recommandation de chansons
-function recommendSongs(dataset, fetchedSongs) {
-    // Fonction pour calculer la similarité cosinus entre deux chansons
-    function calculateCosineSimilarity(song1, song2) {
-        const attributes = ['danceability', 'energy', 'valence']; // Exemple d'attributs
-        const dotProduct = attributes.reduce((sum, attr) => {
-            return sum + (song1[attr] * song2[attr]);
-        }, 0);
-
-        const magnitudeSong1 = Math.sqrt(attributes.reduce((sum, attr) => {
-            return sum + Math.pow(song1[attr], 2);
-        }, 0));
-
-        const magnitudeSong2 = Math.sqrt(attributes.reduce((sum, attr) => {
-            return sum + Math.pow(song2[attr], 2);
-        }, 0));
-
-        // Évite la division par zéro
-        if (magnitudeSong1 === 0 || magnitudeSong2 === 0) return 0;
-        
-        return dotProduct / (magnitudeSong1 * magnitudeSong2);
-    }
-
-    // Calcul des recommandations
-    const recommendations = dataset.map(song => {
-        let totalSimilarity = 0;
-        fetchedSongs.forEach(fetchedSong => {
-            totalSimilarity += calculateCosineSimilarity(song, fetchedSong);
-        });
-        return { song, similarity: totalSimilarity };
-    });
-
-    // Tri des recommandations par similarité décroissante
-    recommendations.sort((a, b) => b.similarity - a.similarity);
-
-    // Retourne les 10 meilleures recommandations
-    return recommendations.slice(0, 16).map(rec => rec.song);
-}
-
-async function fetchTop(token, type, time_range = 'long_term') {
-    const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    return await result.json();
-}
-
-async function fetchAudioFeatures(token, trackId) {
-    let requete = 'https://api.spotify.com/v1/audio-features/?ids=';
-    for (let i = 0; i < trackId.length; i++) {
-        requete = requete + trackId[i].id + ',';
-        if (i == trackId.length - 1) {
-            requete = requete.slice(0, -1);
-        }
-    }
-    const result = await fetch(requete, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!result.ok) {
-        throw new Error(`Error fetching audio features: ${result.statusText}`);
-    }
-    const data = await result.json();
-    return data.audio_features; // Renvoie seulement les caractéristiques audio
-}
-
-async function refreshFeatures(token, tracks) {
-    try {
-        const features = await fetchAudioFeatures(token, tracks.items);
-        tracks.features = features;
-        return tracks.features; // Renvoie les caractéristiques audio
-    } catch (error) {
-        console.error('Error fetching audio features:', error);
-    }
-}
-
-// Fonction pour afficher les recommandations sur la page
-function displayRecommendations(recommendations) {
-    const recommendationsContainer = document.getElementById('topRecommendations');
-    recommendationsContainer.innerHTML = ''; // Clear any existing content
-
-    const uniqueRecommendations = [];
-    const trackIds = new Set();
-
-    recommendations.forEach(rec => {
-        if (!trackIds.has(rec.track_id)) {
-            trackIds.add(rec.track_id);
-            uniqueRecommendations.push(rec);
-        }
-    });
-
-    uniqueRecommendations.forEach((rec, index) => {
-        const songElement = document.createElement('div');
-        songElement.textContent = `Recommendation ${index + 1}: Track Name: ${rec.track_name}, Artist: ${rec.artists}, Album: ${rec.album_name}`;
-        recommendationsContainer.appendChild(songElement);
-    });
-}
-
-
-function populateUI_profile(profile) {
-    document.getElementById("displayName").innerText = profile.display_name;
-    localStorage.setItem('username', profile.display_name);
-    localStorage.setItem('email', profile.email);
-
-    if (profile.images[0]) {
-        const profileImage = new Image(200, 200);
-        profileImage.src = profile.images[0].url;
-        profileImage.height = "40";
-        profileImage.width = "40";
-        document.getElementById("avatar").appendChild(profileImage);
-    }
-}
-
-async function fetchProfile(token) {
-    const result = await fetch("https://api.spotify.com/v1/me", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    return await result.json();
-}
