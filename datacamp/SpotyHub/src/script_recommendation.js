@@ -89,26 +89,51 @@ async function fetchTop(token, type, time_range = 'long_term') {
     return await result.json();
 }
 
-async function fetchAudioFeatures(token, trackId) {
-    let requete = 'https://api.spotify.com/v1/audio-features?ids=';
-    for (let i = 0; i < trackId.length; i++) {
-        requete = requete + trackId[i].id + ',';
-        if (i == trackId.length - 1) {
-            requete = requete.slice(0, -1);
-        }
+/**
+ * Récupère les audio features pour une liste de tracks,
+ * et tente de rafraîchir le token si nécessaire.
+ *
+ * @param {string} token - L'access token Spotify actuel.
+ * @param {Array} tracks - Tableau d’objets track avec propriété .id.
+ * @returns {Promise<Array>} audio_features
+ */
+async function fetchAudioFeatures(token, tracks) {
+    // Construire l’URL avec tous les IDs
+    const ids = tracks.map(t => t.id).join(',');
+    const url = `https://api.spotify.com/v1/audio-features?ids=${ids}`;
+  
+    // Fonction interne pour faire la requête
+    async function doFetch(currentToken) {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      return res;
     }
-    const result = await fetch(requete, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!result.ok) {
-        throw new Error(`Error fetching audio features: ${result.statusText}`);
+  
+    // Première tentative
+    let res = await doFetch(token);
+  
+    // Si jeton expiré / non autorisé, on rafraîchit et on réessaye
+    if (res.status === 401 || res.status === 403) {
+      try {
+        const newToken = await refreshAccessToken();
+        res = await doFetch(newToken);
+      } catch (err) {
+        console.error('Impossible de rafraîchir le token :', err);
+        throw err;
+      }
     }
-    const data = await result.json();
-    return data.audio_features; // Renvoie seulement les caractéristiques audio
-}
-
+  
+    // Toujours vérifier le statut final
+    if (!res.ok) {
+      throw new Error(`Error fetching audio features: ${res.status} ${res.statusText}`);
+    }
+  
+    const data = await res.json();
+    return data.audio_features;
+  }
+  
 async function refreshFeatures(token, tracks) {
     try {
         const features = await fetchAudioFeatures(token, tracks.items);
@@ -118,6 +143,39 @@ async function refreshFeatures(token, tracks) {
         console.error('Error fetching audio features:', error);
     }
 }
+
+async function refreshAccessToken() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+  
+    const params = new URLSearchParams();
+    params.append('grant_type', 'refresh_token');
+    params.append('refresh_token', refreshToken);
+    params.append('client_id', clientId);
+  
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params
+    });
+  
+    if (!res.ok) {
+      throw new Error(`Error refreshing token: ${res.statusText}`);
+    }
+  
+    const { access_token: newAccessToken, refresh_token: newRefreshToken } = await res.json();
+  
+    // Mettre à jour les tokens en mémoire
+    localStorage.setItem('accessToken', newAccessToken);
+    if (newRefreshToken) {
+      // Spotify ne renvoie parfois pas de nouveau refresh_token, donc on ne l'écrase
+      localStorage.setItem('refreshToken', newRefreshToken);
+    }
+  
+    return newAccessToken;
+  }
 
 // Fonction pour afficher les recommandations sur la page
 // Fonction pour afficher les recommandations sur la page

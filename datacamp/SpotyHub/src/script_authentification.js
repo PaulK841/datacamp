@@ -56,17 +56,23 @@ async function getAccessToken(clientId, code) {
     params.append("redirect_uri", "https://datacamp40.netlify.app/datacamp/spotyhub/redirect.html");
     params.append("code_verifier", verifier);
 
-    // Envoyer la requête POST à Spotify pour obtenir l'access_token.
+    // Envoyer la requête POST à Spotify pour obtenir access_token et refresh_token.
     const result = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params
     });
 
-    // Extraire l'access_token de la réponse.
-    const { access_token } = await result.json();
+    // Extraire tokens de la réponse.
+    const { access_token, refresh_token } = await result.json();
+
+    // Stocker les tokens pour usage ultérieur.
+    localStorage.setItem('accessToken', access_token);
+    localStorage.setItem('refreshToken', refresh_token);
+
     return access_token;
 }
+
 
 
 
