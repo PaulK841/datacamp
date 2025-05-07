@@ -45,30 +45,28 @@ async function redirectToAuthCodeFlow(clientId) {
 
 // La fonction getAccessToken envoie une requête POST à Spotify pour obtenir un access_token en utilisant le code d'autorisation et le code de vérification.
 async function getAccessToken(clientId, code) {
+    // Récupérer le code de vérification du local storage.
     const verifier = localStorage.getItem("verifier");
-  
+
+    // Créer les paramètres à envoyer dans le corps de la requête POST.
     const params = new URLSearchParams();
     params.append("client_id", clientId);
     params.append("grant_type", "authorization_code");
     params.append("code", code);
     params.append("redirect_uri", "https://datacamp40.netlify.app/datacamp/spotyhub/redirect.html");
     params.append("code_verifier", verifier);
-  
+
+    // Envoyer la requête POST à Spotify pour obtenir l'access_token.
     const result = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params
     });
-  
-    const { access_token, refresh_token } = await result.json();
-  
-    // **Stocke les deux tokens**
-    localStorage.setItem('accessToken', access_token);
-    localStorage.setItem('refreshToken', refresh_token);
-  
+
+    // Extraire l'access_token de la réponse.
+    const { access_token } = await result.json();
     return access_token;
-  }
-  
+}
 
 
 
