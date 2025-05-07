@@ -1,54 +1,27 @@
 // Définir l'ID du client pour l'application Spotify
 const clientId = "495b2ab2886a41ed81645991f98bcbcb"; //Client ID de Tristan
 
-// Extraire le paramètre "code" de l'URL
+// Extraire le paramètre "code" de l'URL. Il s'agit du code d'autorisation fourni par Spotify pour obtenir un access_token.
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
-// Vérifier d'abord si on a déjà un token valide
-const existingToken = localStorage.getItem('accessToken');
-const tokenExpiration = localStorage.getItem('tokenExpiration');
-const isTokenValid = tokenExpiration && new Date().getTime() < parseInt(tokenExpiration);
-
-if (isTokenValid && existingToken) {
-    console.log("Token existant valide, redirection...");
-    // Rediriger vers la page principale si nécessaire
-    if (window.location.href.includes('redirect.html')) {
-        window.location.href = "index.html";
-    }
-} else if (!code) {
-    console.log("Pas de code, redirection vers l'authentification...");
+// Si le code n'est pas présent, cela signifie que l'utilisateur n'a pas encore été redirigé vers la page d'autorisation de Spotify.
+// Dans ce cas, l'utilisateur est redirigé vers la page d'autorisation.
+if (!code) {
     redirectToAuthCodeFlow(clientId);
 } else {
-    console.log("Code reçu, récupération du token...");
-    try {
-        const tokenData = await getAccessToken(clientId, code);
-        // Sauvegarder le token et sa date d'expiration
-        localStorage.setItem('accessToken', tokenData.access_token);
-        
-        // Calculer l'expiration (tokenData.expires_in est en secondes)
-        const expiration = new Date().getTime() + (tokenData.expires_in * 1000);
-        localStorage.setItem('tokenExpiration', expiration);
-        
-        // Sauvegarder le refresh token si disponible
-        if (tokenData.refresh_token) {
-            localStorage.setItem('refreshToken', tokenData.refresh_token);
-        }
-        
-        console.log("Token obtenu:", tokenData.access_token);
-        
-        // Rediriger vers la page principale
-        window.location.href = "index.html";
-    } catch (error) {
-        console.error("Erreur lors de l'authentification:", error);
-        // En cas d'erreur, redémarrer le processus
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('tokenExpiration');
-        redirectToAuthCodeFlow(clientId);
-    }
+    // Si le code est présent, cela signifie que l'utilisateur a été redirigé depuis la page d'autorisation de Spotify.
+    // L'access_token est alors récupéré en utilisant le code d'autorisation.
+    const accessToken = await getAccessToken(clientId, code);
+    // L'access_token est ensuite stocké dans le local storage pour une utilisation ultérieure.
+    localStorage.setItem('accessToken', accessToken);
+    // L'access_token est également renvoyé par la fonction. 
+    
+    console.log(accessToken);
 }
 
 // La fonction redirectToAuthCodeFlow redirige l'utilisateur vers la page d'autorisation de Spotify.
+// Elle génère également un code de vérification pour la méthode PKCE (Proof Key for Code Exchange) utilisée dans le flux d'autorisation.
 async function redirectToAuthCodeFlow(clientId) {
     // Générer un code de vérification aléatoire.
     const verifier = generateCodeVerifier(128);
@@ -62,8 +35,7 @@ async function redirectToAuthCodeFlow(clientId) {
     params.append("client_id", clientId);
     params.append("response_type", "code");
     params.append("redirect_uri", "https://datacamp40.netlify.app/datacamp/spotyhub/redirect.html");
-    // Ajouter le scope audio-features pour accéder aux caractéristiques audio
-    params.append("scope", "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private user-read-currently-playing");
+    params.append("scope", "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
 
@@ -71,7 +43,7 @@ async function redirectToAuthCodeFlow(clientId) {
     document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
-// La fonction getAccessToken envoie une requête POST à Spotify pour obtenir un access_token
+// La fonction getAccessToken envoie une requête POST à Spotify pour obtenir un access_token en utilisant le code d'autorisation et le code de vérification.
 async function getAccessToken(clientId, code) {
     // Récupérer le code de vérification du local storage.
     const verifier = localStorage.getItem("verifier");
@@ -91,66 +63,15 @@ async function getAccessToken(clientId, code) {
         body: params
     });
 
-    if (!result.ok) {
-        throw new Error(`Erreur lors de la récupération du token: ${result.status} ${result.statusText}`);
-    }
-
-    // Extraire les données complètes de la réponse
-    const data = await result.json();
-    return data; // Retourne le token et sa durée d'expiration
+    // Extraire l'access_token de la réponse.
+    const { access_token } = await result.json();
+    return access_token;
 }
 
-// Fonction pour rafraîchir le token si nécessaire
-async function refreshAccessToken() {
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    if (!refreshToken) {
-        // Si pas de refresh token, rediriger vers la page d'authentification
-        redirectToAuthCodeFlow(clientId);
-        return null;
-    }
-    
-    const params = new URLSearchParams();
-    params.append("client_id", clientId);
-    params.append("grant_type", "refresh_token");
-    params.append("refresh_token", refreshToken);
-    
-    try {
-        const result = await fetch("https://accounts.spotify.com/api/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: params
-        });
-        
-        if (!result.ok) {
-            throw new Error(`Erreur lors du rafraîchissement du token: ${result.status}`);
-        }
-        
-        const data = await result.json();
-        
-        // Mettre à jour le token et son expiration
-        localStorage.setItem('accessToken', data.access_token);
-        const expiration = new Date().getTime() + (data.expires_in * 1000);
-        localStorage.setItem('tokenExpiration', expiration);
-        
-        // Mettre à jour le refresh token si un nouveau est fourni
-        if (data.refresh_token) {
-            localStorage.setItem('refreshToken', data.refresh_token);
-        }
-        
-        return data.access_token;
-    } catch (error) {
-        console.error("Erreur lors du rafraîchissement du token:", error);
-        // En cas d'échec, redémarrer le processus d'authentification
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('tokenExpiration');
-        localStorage.removeItem('refreshToken');
-        redirectToAuthCodeFlow(clientId);
-        return null;
-    }
-}
 
-// La fonction generateCodeVerifier génère un code de vérification aléatoire
+
+// La fonction generateCodeVerifier génère un code de vérification aléatoire de la longueur spécifiée. 
+// Ce code de vérification est utilisé pour la méthode PKCE (Proof Key for Code Exchange) dans le flux d'autorisation OAuth.
 function generateCodeVerifier(length) {
     let text = '';
     let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -161,26 +82,18 @@ function generateCodeVerifier(length) {
     return text;
 }
 
-// La fonction generateCodeChallenge génère un code challenge
+// La fonction generateCodeChallenge génère un code challenge à partir du code de vérification. 
+// Le code challenge est une version hachée et codée en base64 du code de vérification, utilisée pour la méthode PKCE.
 async function generateCodeChallenge(codeVerifier) {
+    // Encodage du code de vérification en utilisant un TextEncoder.
     const data = new TextEncoder().encode(codeVerifier);
+    // Hashage du code de vérification encodé en utilisant SHA-256.
     const digest = await window.crypto.subtle.digest('SHA-256', data);
+    // Conversion du hash en base64, avec remplacement de certains caractères pour le rendre URL-safe.
     return btoa(String.fromCharCode.apply(null, [...new Uint8Array(digest)]))
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=+$/, '');
 }
 
-// Exporter les fonctions nécessaires
-window.checkAndRefreshToken = async function() {
-    const tokenExpiration = localStorage.getItem('tokenExpiration');
-    const currentTime = new Date().getTime();
-    
-    // Si le token expire dans moins de 5 minutes, le rafraîchir
-    if (!tokenExpiration || currentTime > parseInt(tokenExpiration) - 300000) {
-        console.log("Token expiré ou sur le point d'expirer, rafraîchissement...");
-        return await refreshAccessToken();
-    }
-    
-    return localStorage.getItem('accessToken');
-};
+
