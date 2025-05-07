@@ -1,167 +1,125 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-        console.error('Access token not found');
-        return;
-    }
-
-    const url = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
-    Papa.parse(url, {
-        download: true,
-        header: true,
-        complete: async function(results) {
-            console.log('Premiers éléments du dataset:', results.data.slice(0, 5));
-
-            try {
-                const trackId = await fetchTop(accessToken, 'tracks', 'long_term');
-                console.log('Chansons récupérées:', trackId);
-                const fetchedSongs = await refreshFeatures(accessToken, trackId);
-                console.log('Chansons avec caractéristiques récupérées:', fetchedSongs);
-
-                // Appel de la fonction de recommandation
-                const recommendations = recommendSongs(results.data, fetchedSongs);
-                console.log('Recommandations:', recommendations);
-                
-                // Afficher les recommandations sur la page
-                displayRecommendations(recommendations);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        },
-        error: function(error) {
-            console.error('Error parsing CSV:', error);
-        }
-    
+// ---------- Helpers pour token + fetch sécurisé ----------
+async function refreshAccessToken() {
+    const CLIENT_ID = 'VOTRE_SPOTIFY_CLIENT_ID';
+    const refreshToken = localStorage.getItem('refreshToken');
+    const body = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: CLIENT_ID
     });
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    const data = await res.json();
+    if (data.error) throw new Error('Impossible de rafraîchir le token');
+    localStorage.setItem('accessToken', data.access_token);
+    return data.access_token;
+  }
+  
+  async function safeFetch(url, opts = {}) {
+    let token = localStorage.getItem('accessToken');
+    opts.headers = { ...(opts.headers||{}), Authorization: `Bearer ${token}` };
+    let res = await fetch(url, opts);
+    if (res.status === 401) {
+      token = await refreshAccessToken();
+      opts.headers.Authorization = `Bearer ${token}`;
+      res = await fetch(url, opts);
+    }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`Spotify ${res.status}: ${err.error?.message || res.statusText}`);
+    }
+    return res.json();
+  }
+  
+  // ---------- Fonctions métier Spotify ----------
+  async function fetchProfile() {
+    return safeFetch('https://api.spotify.com/v1/me');
+  }
+  
+  async function fetchTopTracks(time_range = 'long_term', limit = 10) {
+    return safeFetch(`https://api.spotify.com/v1/me/top/tracks?time_range=${time_range}&limit=${limit}`)
+      .then(json => json.items);
+  }
+  
+  async function fetchAudioFeaturesFor(tracks) {
+    const ids = tracks.map(t => t.id).join(',');
+    return safeFetch(`https://api.spotify.com/v1/audio-features?ids=${ids}`)
+      .then(json => json.audio_features);
+  }
+  
+  // ---------- Recommandation cosinus ----------
+  function recommendSongs(dataset, features) {
+    const attrs = ['danceability','energy','valence'];
+    const cos = (a,b) => {
+      const dot = attrs.reduce((s,k)=>s + a[k]*b[k],0);
+      const magA = Math.sqrt(attrs.reduce((s,k)=>s + a[k]**2,0));
+      const magB = Math.sqrt(attrs.reduce((s,k)=>s + b[k]**2,0));
+      return magA && magB ? dot/(magA*magB) : 0;
+    };
+  
+    const scores = dataset.map(song => ({
+      song,
+      score: features.reduce((s,f)=>s + cos(song,f), 0)
+    }));
+    return scores
+      .sort((a,b)=>b.score - a.score)
+      .slice(0, 10)
+      .map(r=>r.song);
+  }
+  
+  // ---------- Affichage dans le DOM ----------
+  function displayRecommendations(recs) {
+    const ul = document.getElementById('topRecommendations');
+    ul.innerHTML = '';
+    recs.forEach((song,i) => {
+      const li = document.createElement('li');
+      li.textContent = `${i+1}. ${song.track_name} — ${song.artists} (album : ${song.album_name})`;
+      ul.appendChild(li);
+    });
+  }
+  
+  function populateUIProfile(profile) {
+    document.getElementById('displayName').innerText = profile.display_name;
+    if (profile.images.length) {
+      const img = document.createElement('img');
+      img.src = profile.images[0].url;
+      img.width = 40;
+      img.height = 40;
+      document.getElementById('avatar').appendChild(img);
+    }
+  }
+  
+  // ---------- Chargement initial ----------
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const profile = await fetchProfile(accessToken);
-        populateUI_profile(profile);
-
-    } catch (error) {
-        console.error('Error fetching data:', error);
-    }
-});
-
-// Fonction de recommandation de chansons
-function recommendSongs(dataset, fetchedSongs) {
-    // Fonction pour calculer la similarité cosinus entre deux chansons
-    function calculateCosineSimilarity(song1, song2) {
-        const attributes = ['danceability', 'energy', 'valence']; // Exemple d'attributs
-        const dotProduct = attributes.reduce((sum, attr) => {
-            return sum + (song1[attr] * song2[attr]);
-        }, 0);
-
-        const magnitudeSong1 = Math.sqrt(attributes.reduce((sum, attr) => {
-            return sum + Math.pow(song1[attr], 2);
-        }, 0));
-
-        const magnitudeSong2 = Math.sqrt(attributes.reduce((sum, attr) => {
-            return sum + Math.pow(song2[attr], 2);
-        }, 0));
-
-        // Évite la division par zéro
-        if (magnitudeSong1 === 0 || magnitudeSong2 === 0) return 0;
-        
-        return dotProduct / (magnitudeSong1 * magnitudeSong2);
-    }
-
-    // Calcul des recommandations
-    const recommendations = dataset.map(song => {
-        let totalSimilarity = 0;
-        fetchedSongs.forEach(fetchedSong => {
-            totalSimilarity += calculateCosineSimilarity(song, fetchedSong);
+      // 1) Profil utilisateur
+      const profile = await fetchProfile();
+      populateUIProfile(profile);
+  
+      // 2) Charger le dataset CSV
+      const urlCSV = 'https://raw.githubusercontent.com/PaulK841/datacamp/main/datacamp/SpotyHub/src/dataset.csv';
+      const parsed = await new Promise((res, rej) => {
+        Papa.parse(urlCSV, {
+          download: true,
+          header: true,
+          complete: r => res(r.data),
+          error: e => rej(e)
         });
-        return { song, similarity: totalSimilarity };
-    });
-
-    // Tri des recommandations par similarité décroissante
-    recommendations.sort((a, b) => b.similarity - a.similarity);
-
-    // Retourne les 10 meilleures recommandations
-    return recommendations.slice(0, 16).map(rec => rec.song);
-}
-
-async function fetchTop(token, type, time_range = 'long_term') {
-    const result = await fetch(`https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=10&offset=0`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-    return await result.json();
-}
-
-async function fetchAudioFeatures(token, trackId) {
-    let requete = 'https://api.spotify.com/v1/audio-features?ids=';
-    for (let i = 0; i < trackId.length; i++) {
-        requete = requete + trackId[i].id + ',';
-        if (i == trackId.length - 1) {
-            requete = requete.slice(0, -1);
-        }
+      });
+  
+      // 3) Top tracks + leurs features
+      const topTracks = await fetchTopTracks('long_term', 10);
+      const features  = await fetchAudioFeaturesFor(topTracks);
+  
+      // 4) Générer et afficher les recommandations
+      const recs = recommendSongs(parsed, features);
+      displayRecommendations(recs);
+  
+    } catch (err) {
+      console.error('Erreur générale :', err);
     }
-    const result = await fetch(requete, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!result.ok) {
-        throw new Error(`Error fetching audio features: ${result.statusText}`);
-    }
-    const data = await result.json();
-    return data.audio_features; // Renvoie seulement les caractéristiques audio
-}
-
-async function refreshFeatures(token, tracks) {
-    try {
-        const features = await fetchAudioFeatures(token, tracks.items);
-        tracks.features = features;
-        return tracks.features; // Renvoie les caractéristiques audio
-    } catch (error) {
-        console.error('Error fetching audio features:', error);
-    }
-}
-
-// Fonction pour afficher les recommandations sur la page
-// Fonction pour afficher les recommandations sur la page
-function displayRecommendations(recommendations) {
-    const recommendationsContainer = document.getElementById('topRecommendations');
-    recommendationsContainer.innerHTML = ''; // Clear any existing content
-
-    const uniqueRecommendations = [];
-    const trackIds = new Set();
-
-    recommendations.forEach(rec => {
-        if (!trackIds.has(rec.track_id)) {
-            trackIds.add(rec.track_id);
-            uniqueRecommendations.push(rec);
-        }
-    });
-
-    uniqueRecommendations.forEach((rec, index) => {
-        const songElement = document.createElement('div');
-        songElement.textContent = `Recommendation ${index + 1}: Track Name: ${rec.track_name}, Artist: ${rec.artists}, Album: ${rec.album_name}`;
-        recommendationsContainer.appendChild(songElement);
-    });
-}
-
-
-function populateUI_profile(profile) {
-    document.getElementById("displayName").innerText = profile.display_name;
-    localStorage.setItem('username', profile.display_name);
-    localStorage.setItem('email', profile.email);
-
-    if (profile.images[0]) {
-        const profileImage = new Image(200, 200);
-        profileImage.src = profile.images[0].url;
-        profileImage.height = "40";
-        profileImage.width = "40";
-        document.getElementById("avatar").appendChild(profileImage);
-    }
-}
-
-async function fetchProfile(token) {
-    const result = await fetch("https://api.spotify.com/v1/me", {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    return await result.json();
-}
+  });
+  

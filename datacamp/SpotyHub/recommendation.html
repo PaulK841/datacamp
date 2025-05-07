@@ -1,30 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Spotihub</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="src/menu.css">
+  <meta charset="UTF-8">
+  <title>SpotiHub – Recommandations</title>
+  <link rel="stylesheet" href="src/menu.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="accueil.html"><img src="logo.png" alt="Logo" class="logo"></a>
-        <h1 class="header-title">SpotiHub</h1>
-        <a href="accueil.html">Home Page</a>
-        <a href="recommendation.html">Recommandations</a>
-        <a href="Statistique.html">Statistics</a>
-        <a href="logout.html">Log out</a>
-    </div>
+  <div class="sidebar">
+    <a href="accueil.html"><img src="logo.png" alt="Logo" class="logo"></a>
+    <h1 class="header-title">SpotiHub</h1>
+    <a href="accueil.html">Home Page</a>
+    <a href="recommendation.html" class="active">Recommandations</a>
+    <a href="Statistique.html">Statistics</a>
+    <a href="logout.html">Log out</a>
+  </div>
 
-    <div class="main-content">
-        <h3 id="profile"><span id="avatar" class="profile-image"></span><span id="displayName"></span></h3>
-        <div class="top-lists">
-            <div class="recommendations">
-                <h2>Top 10 Recommendations:</h2>
-                <ul id="topRecommendations"></ul>
-            </div>
-        </div>
+  <div class="main-content">
+    <h3 id="profile">
+      <span id="avatar" class="profile-image"></span>
+      <span id="displayName"></span>
+    </h3>
+
+    <div class="recommendations">
+      <h2>Top 10 Recommendations :</h2>
+      <ul id="topRecommendations"></ul>
     </div>
-    <script type="module" src="src/script_recommendation.js"></script>
-</body>
+  </div>
+
+  <!-- D’abord l’authentification (PKCE, échange code→tokens, refresh) -->
+  <script src="src/script_authentification.js"></script>
+  <!-- Puis la recommandation -->
+  <script src="src/script_recommendation.js"></script>
 </body>
 </html>
