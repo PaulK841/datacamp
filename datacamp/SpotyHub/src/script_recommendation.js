@@ -120,7 +120,6 @@ async function refreshFeatures(token, tracks) {
 }
 
 // Fonction pour afficher les recommandations sur la page
-// Fonction pour afficher les recommandations sur la page
 function displayRecommendations(recommendations) {
     const recommendationsContainer = document.getElementById('topRecommendations');
     recommendationsContainer.innerHTML = ''; // Clear any existing content
