@@ -1,3 +1,5 @@
+import { clientId } from './authentification.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
